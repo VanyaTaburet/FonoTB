@@ -1,301 +1,169 @@
-import QtQuick.Window 2.2
-import QtQuick.Controls 2.2
-import QtQuick.Layouts 1.3
+import QtQuick 2.15
+import QtQuick.Window 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 
 Window {
     visible: true
-    width: 640
-    height: 480
-    title: "Refactor"
+    width: 800
+    height: 600
+    title: "Comments and Audio Controls"
 
     Rectangle {
         anchors.fill: parent
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "#4facfe" }
-            GradientStop { position: 1.0; color: "#00f2fe" }
-        }
+        color: "#2E2E2E"
     }
 
-    Text {
-        id: helloText
-        anchors.top: parent.top
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.topMargin: 20
-        font.bold: true
-        font.pointSize: 42
-        text: "Wassup!"
-        color: "white"
-    }
-
-    GridLayout {
-        id: gridLayout
+    ColumnLayout {
         anchors.centerIn: parent
-        columns: 3
-        rows: 3
-        columnSpacing: 10
-        rowSpacing: 10
+        spacing: 20
 
-        Text { text: "User 1"; font.bold: true; Layout.alignment: Qt.AlignHCenter; color: "white" }
-        Text { text: "User 2"; font.bold: true; Layout.alignment: Qt.AlignHCenter; color: "white" }
-        Text { text: "User 3"; font.bold: true; Layout.alignment: Qt.AlignHCenter; color: "white" }
-
-        Button {
-            text: "1,1"
-            Layout.preferredWidth: 150
-            Layout.preferredHeight: 60
-            Layout.alignment: Qt.AlignHCenter
-            onClicked: helloText.text = "Button 1,1 Clicked!"
-            background: Rectangle {
-                color: parent.down ? "#20B2AA" : "#40E0D0"
+        Repeater {
+            model: 5
+            delegate: Rectangle {
+                width: 600
+                height: 120
+                color: "#3D3D3D"
                 radius: 10
-                border.color: "black"
-                border.width: 2
-            }
-            contentItem: Text {
-                text: parent.text
-                font.bold: true
-                color: "black"
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
-        }
-
-        Button {
-            text: "1,2"
-            Layout.preferredWidth: 150
-            Layout.preferredHeight: 60
-            Layout.alignment: Qt.AlignHCenter
-            onClicked: helloText.text = "Button 1,2 Clicked!"
-            background: Rectangle {
-                color: parent.down ? "#20B2AA" : "#40E0D0"
-                radius: 10
-                border.color: "black"
-                border.width: 2
-            }
-            contentItem: Text {
-                text: parent.text
-                font.bold: true
-                color: "black"
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
-        }
-
-        Button {
-            text: "1,3"
-            Layout.preferredWidth: 150
-            Layout.preferredHeight: 60
-            Layout.alignment: Qt.AlignHCenter
-            onClicked: helloText.text = "Button 1,3 Clicked!"
-            background: Rectangle {
-                color: parent.down ? "#20B2AA" : "#40E0D0"
-                radius: 10
-                border.color: "black"
-                border.width: 2
-            }
-            contentItem: Text {
-                text: parent.text
-                font.bold: true
-                color: "black"
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
-        }
-
-        Button {
-            text: "2,1"
-            Layout.preferredWidth: 150
-            Layout.preferredHeight: 60
-            Layout.alignment: Qt.AlignHCenter
-            onClicked: helloText.text = "Button 2,1 Clicked!"
-            background: Rectangle {
-                color: parent.down ? "#20B2AA" : "#40E0D0"
-                radius: 10
-                border.color: "black"
-                border.width: 2
-            }
-            contentItem: Text {
-                text: parent.text
-                font.bold: true
-                color: "black"
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
-        }
-
-        // Кнопка 2,2
-        Button {
-            text: "2,2"
-            Layout.preferredWidth: 150
-            Layout.preferredHeight: 60
-            Layout.alignment: Qt.AlignHCenter
-            onClicked: helloText.text = "Button 2,2 Clicked!"
-            background: Rectangle {
-                color: parent.down ? "#20B2AA" : "#40E0D0"
-                radius: 10
-                border.color: "black"
-                border.width: 2
-            }
-            contentItem: Text {
-                text: parent.text
-                font.bold: true
-                color: "black"
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
-        }
-
-        // Кнопка 2,3
-        Button {
-            text: "2,3"
-            Layout.preferredWidth: 150
-            Layout.preferredHeight: 60
-            Layout.alignment: Qt.AlignHCenter
-            onClicked: helloText.text = "Button 2,3 Clicked!"
-            background: Rectangle {
-                color: parent.down ? "#20B2AA" : "#40E0D0"
-                radius: 10
-                border.color: "black"
-                border.width: 2
-            }
-            contentItem: Text {
-                text: parent.text
-                font.bold: true
-                color: "black"
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
-        }
-
-        // TextArea для комментариев
-        TextArea {
-            id: commentField1
-            placeholderText: "Введите ваш комментарий..."
-            Layout.preferredWidth: 150
-            Layout.preferredHeight: 60
-            wrapMode: TextArea.Wrap
-            background: Rectangle {
-                color: "white"
-                radius: 5
                 border.color: "#4facfe"
                 border.width: 2
-            }
-        }
 
-        TextArea {
-            id: commentField2
-            placeholderText: "Введите ваш комментарий..."
-            Layout.preferredWidth: 150
-            Layout.preferredHeight: 60
-            wrapMode: TextArea.Wrap
-            background: Rectangle {
-                color: "white"
-                radius: 5
-                border.color: "#4facfe"
-                border.width: 2
-            }
-        }
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: 10
+                    spacing: 10
 
-        TextArea {
-            id: commentField3
-            placeholderText: "Введите ваш комментарий..."
-            Layout.preferredWidth: 150
-            Layout.preferredHeight: 60
-            wrapMode: TextArea.Wrap
-            background: Rectangle {
-                color: "white"
-                radius: 5
-                border.color: "#4facfe"
-                border.width: 2
-            }
-        }
+                    Text {
+                        text: "Fono " + (index + 1)
+                        font.bold: true
+                        font.pointSize: 16
+                        color: "#FFFFFF"
+                        Layout.alignment: Qt.AlignVCenter
+                    }
 
-        Button {
-            text: "Отправить"
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 150
-            Layout.preferredHeight: 60
-            onClicked: {
-                var comment = commentField1.text;
-                if (comment.trim() !== "") {
-                    console.log("Комментарий отправлен: " + comment);
-                    commentField1.text = "";
-                } else {
-                    console.log("Поле комментария пустое!");
+                    TextArea {
+                        id: commentField
+                        placeholderText: "Введите ваш комментарий..."
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 60
+                        wrapMode: TextArea.Wrap
+                        background: Rectangle {
+                            color: "#4D4D4D"
+                            radius: 5
+                            border.color: "#4facfe"
+                            border.width: 1
+                        }
+                        color: "#FFFFFF"
+                    }
+
+                    Button {
+                        text: "Отправить"
+                        Layout.preferredWidth: 100
+                        Layout.preferredHeight: 40
+                        onClicked: {
+                            var comment = commentField.text;
+                            if (comment.trim() !== "") {
+                                console.log("Комментарий отправлен для User " + (index + 1) + ": " + comment);
+                                commentField.text = "";
+                            } else {
+                                console.log("Поле комментария пустое для User " + (index + 1));
+                            }
+                        }
+                        background: Rectangle {
+                            color: parent.down ? "#4facfe" : "#00f2fe"
+                            radius: 5
+                            border.color: "black"
+                            border.width: 1
+                        }
+                        contentItem: Text {
+                            text: parent.text
+                            font.bold: true
+                            color: "black"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                    }
+
+                    Button {
+                        id: startButton
+                        text: "Слушать"
+                        Layout.preferredWidth: 100
+                        Layout.preferredHeight: 40
+                        onClicked: {
+                            console.log("Начало прослушивания для User " + (index + 1));
+                            startButton.visible = false;
+                            stopButton.visible = true;
+                            audioAnimation.start();
+                        }
+                        background: Rectangle {
+                            color: parent.down ? "#4facfe" : "#00f2fe"
+                            radius: 5
+                            border.color: "black"
+                            border.width: 1
+                        }
+                        contentItem: Text {
+                            text: parent.text
+                            font.bold: true
+                            color: "black"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                    }
+
+                    Button {
+                        id: stopButton
+                        text: "Завершить"
+                        Layout.preferredWidth: 100
+                        Layout.preferredHeight: 40
+                        visible: false
+                        onClicked: {
+                            console.log("Завершение прослушивания для User " + (index + 1));
+                            stopButton.visible = false;
+                            startButton.visible = true;
+                            audioAnimation.stop();
+                            slider.width = 0;
+                        }
+                        background: Rectangle {
+                            color: parent.down ? "#4facfe" : "#00f2fe"
+                            radius: 5
+                            border.color: "black"
+                            border.width: 1
+                        }
+                        contentItem: Text {
+                            text: parent.text
+                            font.bold: true
+                            color: "black"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                    }
+
+                    Rectangle {
+                        id: audioVisualization
+                        width: 100
+                        height: 20
+                        color: "transparent"
+                        Layout.alignment: Qt.AlignVCenter
+
+                        Rectangle {
+                            id: slider
+                            width: 0
+                            height: 4
+                            color: "#4facfe"
+                            radius: 2
+                            anchors.verticalCenter: parent.verticalCenter
+
+                            SequentialAnimation on width {
+                                id: audioAnimation
+                                running: false
+                                loops: Animation.Infinite
+                                NumberAnimation { to: parent.width; duration: 200000; easing.type: Easing.Linear }
+                                NumberAnimation { to: 0; duration: 0; }
+                            }
+                        }
+                    }
                 }
-            }
-            background: Rectangle {
-                color: parent.down ? "#4facfe" : "#00f2fe"
-                radius: 10
-                border.color: "black"
-                border.width: 2
-            }
-            contentItem: Text {
-                text: parent.text
-                font.bold: true
-                color: "black"
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
-        }
-
-        Button {
-            text: "Отправить"
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 150
-            Layout.preferredHeight: 60
-            onClicked: {
-                var comment = commentField2.text;
-                if (comment.trim() !== "") {
-                    console.log("Комментарий отправлен: " + comment);
-                    commentField2.text = "";
-                } else {
-                    console.log("Поле комментария пустое!");
-                }
-            }
-            background: Rectangle {
-                color: parent.down ? "#4facfe" : "#00f2fe"
-                radius: 10
-                border.color: "black"
-                border.width: 2
-            }
-            contentItem: Text {
-                text: parent.text
-                font.bold: true
-                color: "black"
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
-        }
-
-        Button {
-            text: "Отправить"
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 150
-            Layout.preferredHeight: 60
-            onClicked: {
-                var comment = commentField3.text;
-                if (comment.trim() !== "") {
-                    console.log("Комментарий отправлен: " + comment);
-                    commentField3.text = "";
-                } else {
-                    console.log("Поле комментария пустое!");
-                }
-            }
-            background: Rectangle {
-                color: parent.down ? "#4facfe" : "#00f2fe"
-                radius: 10
-                border.color: "black"
-                border.width: 2
-            }
-            contentItem: Text {
-                text: parent.text
-                font.bold: true
-                color: "black"
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
             }
         }
     }
 }
-
