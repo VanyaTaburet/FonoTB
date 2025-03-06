@@ -13,14 +13,14 @@ Window {
         id: usersModel
     }
 
-    Flickable 
+    Flickable
     {
         id: flickable
         anchors.fill: parent
         contentHeight: column.height
         clip: true
 
-        Column 
+        Column
         {
             id: column
             width: parent.width
@@ -34,7 +34,7 @@ Window {
                     height: 150
                     color: "lightgray"
 
-                    Text 
+                    Text
                     {
                         text: (index + 1).toString()
                         anchors {
@@ -50,7 +50,7 @@ Window {
                     {
                         width: parent.width * 0.2
                         height: 60
-                        anchors 
+                        anchors
                         {
                             left: parent.left
                             verticalCenter: parent.verticalCenter
@@ -65,7 +65,7 @@ Window {
                         }
                     }
 
-                    TextField 
+                    TextField
                     {
                         id: inputField
                         width: parent.width * 0.5
@@ -77,7 +77,7 @@ Window {
                     Text
                     {
                         id: userStatus
-                        anchors 
+                        anchors
                         {
                             bottom: parent.bottom
                             left: parent.left
@@ -105,4 +105,3 @@ Window {
         }
     }
 }
-
