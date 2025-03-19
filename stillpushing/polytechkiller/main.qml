@@ -3,8 +3,8 @@ import QtQuick.Window 2.15
 import QtQuick.Controls 2.15
 
 Window {
-    width: 1920
-    height: 1080
+    width: Screen.width
+    height: Screen.height
     visible: true
     title: qsTr("Scrollable Sections with Input Fields")
 
