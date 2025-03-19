@@ -13,11 +13,10 @@ Window {
     WebSocket {
         id: webSocket
         url: "ws://localhost:12345"
-        active: true // Активируем WebSocket
+        active: true
 
         onTextMessageReceived: function(message) {
             console.log("Received message:", message);
-            // Используем Qt.callLater для обновления интерфейса
             Qt.callLater(function() {
                 commentsModel.append({"text": message});
             });
@@ -52,7 +51,7 @@ Window {
             onClicked: {
                 if (commentInput.text.length > 0) {
                     webSocket.sendTextMessage(commentInput.text);
-                    commentInput.text = ""; // очищаем поле ввода после отправки
+                    commentInput.text = "";
                 }
             }
         }
