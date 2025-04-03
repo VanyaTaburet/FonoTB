@@ -1,83 +1,115 @@
 #include "MainWindow.h"
-#include "ui_MainWindow.h"
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QPushButton>
+#include <QTextBrowser>
+#include <QVBoxLayout>
 #include <QDebug>
-#include <QQmlContext>
-#include <QQmlApplicationEngine>
-#include <QWebSocket>
+
+#ifdef _WIN32
+#include <windows.h>
+#include <Lmcons.h>
+#else
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+#endif
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), m_webSocket(new QWebSocket), userModel(new QStringListModel(this)) {
-    ui->setupUi(this);
+    : QMainWindow(parent), m_webSocket(new QWebSocket)
+{
+    // Основной виджет
+    QWidget *centralWidget = new QWidget(this);
+    setCentralWidget(centralWidget);
+	
+	this->resize(800,600);
 
-    // Logging
-    qDebug() << "MainWindow: Constructor called.";
+    // Главный layout
+    QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
 
-    // Create QQmlApplicationEngine instance
-    QQmlApplicationEngine engine;
+    // Кнопка "Подключиться"
+    connectButton = new QPushButton("Connect", this);
+    mainLayout->addWidget(connectButton);
+    connect(connectButton, &QPushButton::clicked, this, &MainWindow::onConnectClicked);
 
-    // Expose the current instance of MainWindow to QML as webSocketClient
-    engine.rootContext()->setContextProperty("webSocketClient", this);
+    // ScrollArea для списка пользователей
+    userScrollArea = new QScrollArea(this);
+    userScrollArea->setWidgetResizable(true);
+    mainLayout->addWidget(userScrollArea);
 
-    // Load the QML file
-    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+    // Виджет-контейнер для списка пользователей
+    userListWidget = new QWidget();
+    userListLayout = new QVBoxLayout(userListWidget);
+    userListWidget->setLayout(userListLayout);
+    userScrollArea->setWidget(userListWidget);
 
-    // Connect WebSocket signals
-    connect(m_webSocket, &QWebSocket::connected, this, &MainWindow::onConnected);
+    // Подключаем WebSocket
+    connect(m_webSocket, &QWebSocket::connected, this, [this]() {
+        QString userName = getUserName();
+        QString setNameMessage = QString("SET_NAME %1").arg(userName);
+        m_webSocket->sendTextMessage(setNameMessage);
+    });
+
     connect(m_webSocket, &QWebSocket::textMessageReceived, this, &MainWindow::onTextMessageReceived);
-
-    // Connect the button
-    connect(ui->connectButton, &QPushButton::clicked, this, &MainWindow::onConnectButtonClicked);
-    qDebug() << "MainWindow: Connection established and button connected.";
 }
 
-MainWindow::~MainWindow() {
-    delete ui;
+MainWindow::~MainWindow()
+{
     delete m_webSocket;
-    qDebug() << "MainWindow: Destructor called.";
 }
 
-void MainWindow::onConnectButtonClicked() {
-    qDebug() << "MainWindow: 'Connect' button clicked.";
-    // Open WebSocket connection
-    m_webSocket->open(QUrl("ws://192.168.31.94:1234")); // WebSocket server address
+void MainWindow::onConnectClicked()
+{
+    m_webSocket->open(QUrl("ws://192.168.31.94:1234"));
 }
 
-void MainWindow::onConnected() {
-    qDebug() << "MainWindow: WebSocket connected.";
-    QString userName = "saveliy123"; // Example username
-    m_webSocket->sendTextMessage("SET_NAME " + userName);
-}
+void MainWindow::onTextMessageReceived(const QString &message)
+{
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(message.toUtf8());
+    if (!jsonDoc.isObject()) {
+        qDebug() << "Invalid JSON: " << message;
+        return;
+    }
 
-void MainWindow::onTextMessageReceived(const QString &message) {
-    qDebug() << "MainWindow: Received message: " << message;
-
-    QJsonDocument doc = QJsonDocument::fromJson(message.toUtf8());
-    if (doc.isObject()) {
-        QJsonObject obj = doc.object();
-        if (obj["type"].toString() == "user_list") {
-            parseUserList(message);
+    QJsonObject jsonObj = jsonDoc.object();
+    if (jsonObj.contains("type") && jsonObj["type"].toString() == "user_list") {
+        QJsonArray usersArray = jsonObj["users"].toArray();
+        QStringList users;
+        for (const auto &user : usersArray) {
+            users.append(user.toString());
         }
+        updateUserList(users);
     }
 }
 
-void MainWindow::parseUserList(const QString &jsonMessage) {
-    qDebug() << "MainWindow: Parsing user list.";
+QString MainWindow::getUserName()
+{
+#ifdef _WIN32
+    char username[UNLEN + 1];
+    DWORD username_len = UNLEN + 1;
+    GetUserNameA(username, &username_len);
+    return QString(username);
+#else
+    struct passwd *pw = getpwuid(getuid());
+    return pw ? QString(pw->pw_name) : "UnknownUser";
+#endif
+}
 
-    QJsonDocument doc = QJsonDocument::fromJson(jsonMessage.toUtf8());
-    QJsonObject obj = doc.object();
-    
-    if (obj.contains("users") && obj["users"].isArray()) {
-        QJsonArray usersArray = obj["users"].toArray();
-        QStringList userList;
-        
-        for (const QJsonValue &val : usersArray) {
-            userList.append(val.toString());
-        }
-        
-        // Update the model in QML via signal
-        emit userListUpdated(userList);  // This will emit the signal
+void MainWindow::updateUserList(const QStringList &users)
+{
+    // Удаляем старые виджеты
+    QLayoutItem *child;
+    while ((child = userListLayout->takeAt(0)) != nullptr) {
+        delete child->widget();
+        delete child;
+    }
+
+    // Добавляем новых пользователей
+    for (const QString &user : users) {
+        QTextBrowser *userField = new QTextBrowser();
+        userField->setText(user);
+        userField->setFixedHeight(30);
+        userListLayout->addWidget(userField);
     }
 }

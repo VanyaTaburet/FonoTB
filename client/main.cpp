@@ -1,20 +1,9 @@
 #include <QApplication>
-#include <QQmlApplicationEngine>
-#include <QQmlContext>
-#include <QtWebSockets/QWebSocket>
-#include <QGuiApplication>
+#include "MainWindow.h"
 
-int main(int argc, char *argv[])
-{
-    QGuiApplication app(argc, argv);
-
-    QQmlApplicationEngine engine;
-
-    // Загружаем QML-файл
-    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));  // Убедись, что QML файл загружается правильно
-
-    if (engine.rootObjects().isEmpty())
-        return -1;
-
-    return app.exec();
+int main(int argc, char *argv[]) {
+    QApplication a(argc, argv);
+    MainWindow w;
+    w.show();
+    return a.exec();
 }

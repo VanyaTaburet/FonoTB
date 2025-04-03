@@ -3,11 +3,10 @@
 
 #include <QMainWindow>
 #include <QWebSocket>
-#include <QStringListModel>
-
-namespace Ui {
-class MainWindow;
-}
+#include <QVBoxLayout>
+#include <QScrollArea>
+#include <QPushButton>   // Добавляем заголовок для кнопки
+#include <QTextBrowser>  // Добавляем заголовок для текстового поля
 
 class MainWindow : public QMainWindow
 {
@@ -17,19 +16,19 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-signals:
-    void userListUpdated(const QStringList &userList);  // Signal definition
-
 private slots:
-    void onConnectButtonClicked();
-    void onConnected();
+    void onConnectClicked();
     void onTextMessageReceived(const QString &message);
-    void parseUserList(const QString &jsonMessage);
+    void updateUserList(const QStringList &users);
 
 private:
-    Ui::MainWindow *ui;
     QWebSocket *m_webSocket;
-    QStringListModel *userModel;
+    QVBoxLayout *userListLayout;
+    QWidget *userListWidget;
+    QScrollArea *userScrollArea;
+    QPushButton *connectButton;  // Объявляем кнопку
+
+    QString getUserName();
 };
 
 #endif // MAINWINDOW_H
