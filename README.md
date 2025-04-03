@@ -18,6 +18,10 @@ git clone https://gitflic.ru/project/litvinov_mv/astra-linux-cmake.git
 cd astra-linux-cmake/
 sh build-cmake.sh
 ```
+далее ставим одну (библиотеку?) чтоб не было пробелм в будующем
+```
+sudo apt install libqt5websockets5-dev
+```
 # НАСТРОЙКА СЕРВЕРА 
 Переходим в папку `server` открываем файл `SimpleWebSocketServer.cpp` ищем строку
 ```
