@@ -4,6 +4,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QSettings>
+#include <QFile>
 
 SimpleWebSocketServer::SimpleWebSocketServer(QObject *parent)
     : QObject(parent),
@@ -20,8 +22,25 @@ SimpleWebSocketServer::~SimpleWebSocketServer()
 
 void SimpleWebSocketServer::startServer()
 {
-    if (m_server->listen(QHostAddress("192.168.31.94"), 1234)) {
-        qDebug() << "Server started!";
+    // Загружаем настройки из .env
+    QString ipAddress = "192.168.31.94"; // Значение по умолчанию
+    quint16 port = 1234;                 // Значение по умолчанию
+
+    QFile envFile(".env");
+    if (envFile.exists()) {
+        QSettings settings(".env", QSettings::IniFormat);
+        settings.setIniCodec("UTF-8");
+
+        ipAddress = settings.value("IP", ipAddress).toString();
+        port = settings.value("HOST", port).toUInt();
+
+        qDebug() << "Loaded from .env: IP =" << ipAddress << ", Port =" << port;
+    } else {
+        qDebug() << "No .env file found. Using default settings: IP =" << ipAddress << ", Port =" << port;
+    }
+
+    if (m_server->listen(QHostAddress(ipAddress), port)) {
+        qDebug() << "Server started at" << ipAddress << ":" << port;
         connect(m_server, &QWebSocketServer::newConnection, this, &SimpleWebSocketServer::onNewConnection);
     } else {
         qDebug() << "Failed to start server!";
@@ -93,7 +112,8 @@ void SimpleWebSocketServer::broadcastMessage(const QString &message)
     }
 }
 
-void SimpleWebSocketServer::sendUserListToAll() {
+void SimpleWebSocketServer::sendUserListToAll()
+{
     QJsonObject jsonMessage;
     QJsonArray userArray;
 

@@ -6,6 +6,10 @@
 #include <QTextBrowser>
 #include <QVBoxLayout>
 #include <QDebug>
+#include <QFile>
+#include <QTextStream>
+
+#include <QRegularExpression>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -19,11 +23,19 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), m_webSocket(new QWebSocket)
 {
+    // Загружаем IP и порт из .env
+    if (!loadEnv(serverIp, serverPort)) {
+        qDebug() << "Error: Failed to load .env file!";
+        return;
+    }
+
+    qDebug() << "Loaded from .env: IP =" << serverIp << ", Port =" << serverPort;
+
     // Основной виджет
     QWidget *centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
-	
-	this->resize(800,600);
+    
+    this->resize(800, 600);
 
     // Главный layout
     QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
@@ -61,7 +73,9 @@ MainWindow::~MainWindow()
 
 void MainWindow::onConnectClicked()
 {
-    m_webSocket->open(QUrl("ws://192.168.31.94:1234"));
+    QString url = QString("ws://%1:%2").arg(serverIp).arg(serverPort);
+    qDebug() << "Connecting to" << url;
+    m_webSocket->open(QUrl(url));
 }
 
 void MainWindow::onTextMessageReceived(const QString &message)
@@ -112,4 +126,42 @@ void MainWindow::updateUserList(const QStringList &users)
         userField->setFixedHeight(30);
         userListLayout->addWidget(userField);
     }
+}
+
+bool MainWindow::loadEnv(QString &ip, int &port) {
+    QFile file(".env");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Failed to open .env file!";
+        return false;
+    }
+
+    QTextStream in(&file);
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        
+        // Парсим строку "IP=192.168.3.8"
+        QRegularExpression ipRegex(R"(IP\s*=\s*\"?([\d\.]+)\"?)");
+        QRegularExpressionMatch ipMatch = ipRegex.match(line);
+        if (ipMatch.hasMatch()) {
+            ip = ipMatch.captured(1);
+        }
+
+        // Парсим строку "PORT=5678"
+        QRegularExpression portRegex(R"(PORT\s*=\s*\"?(\d+)\"?)");
+        QRegularExpressionMatch portMatch = portRegex.match(line);
+        if (portMatch.hasMatch()) {
+            port = portMatch.captured(1).toInt();  // Преобразуем строку в число
+        }
+    }
+
+    file.close();
+
+    // Проверяем, загрузились ли значения
+    if (ip.isEmpty() || port <= 0) {
+        qDebug() << "Error: Invalid IP or Port from .env";
+        return false;
+    }
+
+    qDebug() << "Loaded from .env: IP =" << ip << ", Port =" << port;
+    return true;
 }

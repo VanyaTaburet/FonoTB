@@ -3,10 +3,9 @@
 
 #include <QMainWindow>
 #include <QWebSocket>
-#include <QVBoxLayout>
 #include <QScrollArea>
-#include <QPushButton>   // Добавляем заголовок для кнопки
-#include <QTextBrowser>  // Добавляем заголовок для текстового поля
+#include <QVBoxLayout>
+#include <QPushButton>
 
 class MainWindow : public QMainWindow
 {
@@ -19,16 +18,23 @@ public:
 private slots:
     void onConnectClicked();
     void onTextMessageReceived(const QString &message);
-    void updateUserList(const QStringList &users);
 
 private:
-    QWebSocket *m_webSocket;
-    QVBoxLayout *userListLayout;
-    QWidget *userListWidget;
-    QScrollArea *userScrollArea;
-    QPushButton *connectButton;  // Объявляем кнопку
-
     QString getUserName();
+    void updateUserList(const QStringList &users);
+    
+    // Добавляем метод для загрузки .env
+    bool loadEnv(QString &ip, int &port);
+
+    // Добавляем переменные для хранения IP и порта
+    QString serverIp;
+    int serverPort;
+
+    QWebSocket *m_webSocket;
+    QPushButton *connectButton;
+    QScrollArea *userScrollArea;
+    QWidget *userListWidget;
+    QVBoxLayout *userListLayout;
 };
 
 #endif // MAINWINDOW_H
