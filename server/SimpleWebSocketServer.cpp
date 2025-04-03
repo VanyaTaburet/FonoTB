@@ -20,7 +20,7 @@ SimpleWebSocketServer::~SimpleWebSocketServer()
 
 void SimpleWebSocketServer::startServer()
 {
-    if (m_server->listen(QHostAddress::Any, 1234)) {
+    if (m_server->listen(QHostAddress("192.168.31.94"), 1234)) {
         qDebug() << "Server started!";
         connect(m_server, &QWebSocketServer::newConnection, this, &SimpleWebSocketServer::onNewConnection);
     } else {
