@@ -4,8 +4,20 @@
 ```
 ipconfig
 ```
+или же 
+```
+# TODO я еще не разобрался как это найти на лиунксе
+```
+если вы на лиунксе
 Нас интересует IPv4-адрес на нужном нам адаптере. Запомниаем его (в примере адрес - 192.168.31.94)
 -------
+
+## Установка Cmake на ASTRA LINUX
+```
+git clone https://gitflic.ru/project/litvinov_mv/astra-linux-cmake.git
+cd astra-linux-cmake/
+sh build-cmake.sh
+```
 # НАСТРОЙКА СЕРВЕРА 
 Переходим в папку `server` открываем файл `SimpleWebSocketServer.cpp` ищем строку
 ```
