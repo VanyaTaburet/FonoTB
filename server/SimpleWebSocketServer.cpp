@@ -27,6 +27,7 @@ SimpleWebSocketServer::~SimpleWebSocketServer()
     qDeleteAll(m_clients.keys());
 }
 
+
 void SimpleWebSocketServer::startServer()
 {
 	
@@ -190,14 +191,23 @@ void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
             qDebug() << "User" << user << "added to track" << trackId;
 
             QJsonObject response;
-            response["type"] = "add_user_to_track_response";
-            response["status"] = "success";
-            senderSocket->sendTextMessage(QString::fromUtf8(QJsonDocument(response).toJson(QJsonDocument::Compact)));
+            response["type"] = "track_users_list";
+            QJsonArray trackUsersArray;
+            for (auto it = m_trackUsers.begin(); it != m_trackUsers.end(); ++it) {
+                QJsonObject trackUsers;
+                trackUsers["track_id"] = it.key();
+                trackUsers["users"] = QJsonArray::fromStringList(it.value());
+                trackUsersArray.append(trackUsers);
+            }
+            response["track_users"] = trackUsersArray;
+
+            QString responseStr = QString::fromUtf8(QJsonDocument(response).toJson(QJsonDocument::Compact));
+            broadcastMessage(responseStr);
         }
         else {
             qDebug() << "Failed to add user to track";
             QJsonObject response;
-            response["type"] = "add_user_to_track_response";
+            response["type"] = "add_user_to_track";
             response["status"] = "failure";
             senderSocket->sendTextMessage(QString::fromUtf8(QJsonDocument(response).toJson(QJsonDocument::Compact)));
         }
@@ -217,13 +227,23 @@ void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
             }
 
             QJsonObject response;
-            response["type"] = "remove_user_response";
-            response["status"] = userFound ? "success" : "failure";
-            senderSocket->sendTextMessage(QString::fromUtf8(QJsonDocument(response).toJson(QJsonDocument::Compact)));
-        } else {
+            response["type"] = "track_users_list";
+            QJsonArray trackUsersArray;
+            for (auto it = m_trackUsers.begin(); it != m_trackUsers.end(); ++it) {
+                QJsonObject trackUsers;
+                trackUsers["track_id"] = it.key();
+                trackUsers["users"] = QJsonArray::fromStringList(it.value());
+                trackUsersArray.append(trackUsers);
+            }
+            response["track_users"] = trackUsersArray;
+
+            QString responseStr = QString::fromUtf8(QJsonDocument(response).toJson(QJsonDocument::Compact));
+            broadcastMessage(responseStr);
+        }
+        else {
             qDebug() << "Failed to remove user";
             QJsonObject response;
-            response["type"] = "remove_user_response";
+            response["type"] = "remove_user";
             response["status"] = "failure";
             senderSocket->sendTextMessage(QString::fromUtf8(QJsonDocument(response).toJson(QJsonDocument::Compact)));
         }
@@ -257,6 +277,7 @@ void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
 
 
 
+
 void SimpleWebSocketServer::onDisconnected()
 {
     QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
@@ -272,12 +293,13 @@ void SimpleWebSocketServer::onDisconnected()
     }
 }
 
-void SimpleWebSocketServer::broadcastMessage(const QString &message)
+void SimpleWebSocketServer::broadcastMessage(const QString& message)
 {
-    for (QWebSocket *client : m_clients.keys()) {
+    for (QWebSocket* client : m_clients.keys()) {
         client->sendTextMessage(message);
     }
 }
+
 
 void SimpleWebSocketServer::sendUserListToAll()
 {
