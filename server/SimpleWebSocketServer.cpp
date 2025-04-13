@@ -179,10 +179,82 @@ void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
             senderSocket->sendTextMessage(QString::fromUtf8(QJsonDocument(response).toJson(QJsonDocument::Compact)));
         }
     }
+    else if (type == "add_user_to_track") {
+        qDebug() << "Received request to add user to track";
+
+        QString trackId = jsonMessage["track_id"].toString();
+        QString user = jsonMessage["user"].toString();
+
+        if (!trackId.isEmpty() && !user.isEmpty()) {
+            m_trackUsers[trackId].append(user);
+            qDebug() << "User" << user << "added to track" << trackId;
+
+            QJsonObject response;
+            response["type"] = "add_user_to_track_response";
+            response["status"] = "success";
+            senderSocket->sendTextMessage(QString::fromUtf8(QJsonDocument(response).toJson(QJsonDocument::Compact)));
+        }
+        else {
+            qDebug() << "Failed to add user to track";
+            QJsonObject response;
+            response["type"] = "add_user_to_track_response";
+            response["status"] = "failure";
+            senderSocket->sendTextMessage(QString::fromUtf8(QJsonDocument(response).toJson(QJsonDocument::Compact)));
+        }
+    }
+    else if (type == "remove_user") {
+        qDebug() << "Received request to remove user";
+
+        QString userId = jsonMessage["user_id"].toString();
+
+        if (!userId.isEmpty()) {
+            bool userFound = false;
+            for (auto it = m_trackUsers.begin(); it != m_trackUsers.end(); ++it) {
+                if (it.value().removeAll(userId) > 0) {
+                    userFound = true;
+                    qDebug() << "User" << userId << "removed from track" << it.key();
+                }
+            }
+
+            QJsonObject response;
+            response["type"] = "remove_user_response";
+            response["status"] = userFound ? "success" : "failure";
+            senderSocket->sendTextMessage(QString::fromUtf8(QJsonDocument(response).toJson(QJsonDocument::Compact)));
+        } else {
+            qDebug() << "Failed to remove user";
+            QJsonObject response;
+            response["type"] = "remove_user_response";
+            response["status"] = "failure";
+            senderSocket->sendTextMessage(QString::fromUtf8(QJsonDocument(response).toJson(QJsonDocument::Compact)));
+        }
+    }
+    else if (type == "get_track_users") {
+        qDebug() << "Received request for track users";
+
+        QJsonArray trackUsersArray;
+        for (auto it = m_trackUsers.begin(); it != m_trackUsers.end(); ++it) {
+            QJsonObject trackObject;
+            trackObject["track_id"] = it.key();
+            trackObject["users"] = QJsonArray::fromStringList(it.value());
+            trackUsersArray.append(trackObject);
+        }
+
+        QJsonObject response;
+        response["type"] = "track_users_list";
+        response["track_users"] = trackUsersArray;
+
+        QString responseStr = QString::fromUtf8(QJsonDocument(response).toJson(QJsonDocument::Compact));
+        qDebug() << "Sending track users list response to client:" << responseStr;
+
+        senderSocket->sendTextMessage(responseStr);
+    }
     else {
         qWarning() << "Unknown message type:" << type;
     }
 }
+
+
+
 
 
 void SimpleWebSocketServer::onDisconnected()

@@ -3,27 +3,23 @@
 
 #include <QObject>
 #include <QWebSocketServer>
-#include <QWebSocket>
-#include <QStringList>
-#include <QMap>
-#include <QJsonObject>
+#include <QHash>
 #include <QSqlDatabase>
+#include <QMap>
+#include <QStringList>
 
 class TrackRepository; // Forward declaration
 
 class SimpleWebSocketServer : public QObject
 {
     Q_OBJECT
-
 public:
     explicit SimpleWebSocketServer(QObject* parent = nullptr);
     ~SimpleWebSocketServer();
 
     void startServer();
-    void broadcastMessage(const QString& message);
-    void updateUserList();
-    bool connectToDatabase(); // Подключение к базе данных
-    void showAllRecords(TrackRepository& repo); // Отображение всех записей из базы данных
+    void showAllRecords(TrackRepository& repo);
+    void sendTrackUsersToAll();
 
 private slots:
     void onNewConnection();
@@ -31,12 +27,16 @@ private slots:
     void onDisconnected();
 
 private:
-    QWebSocketServer* m_server;
-    QMap<QWebSocket*, QString> m_clients; // Список всех подключенных клиентов и их имен
-    QSqlDatabase m_database;
-
+    void broadcastMessage(const QString& message);
     void sendUserListToAll();
-    QJsonObject parseJson(const QString& message); // Функция для парсинга JSON
+    bool connectToDatabase();
+    QJsonObject parseJson(const QString& message);
+
+    QWebSocketServer* m_server;
+    QHash<QWebSocket*, QString> m_clients;
+    QSqlDatabase m_database;
+    QMap<QString, QStringList> m_trackUsers; // Добавляем новый член класса
 };
 
 #endif // SIMPLEWEBSOCKETSERVER_H
+
