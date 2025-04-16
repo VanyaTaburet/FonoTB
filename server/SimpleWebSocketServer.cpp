@@ -187,8 +187,13 @@ void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
         QString user = jsonMessage["user"].toString();
 
         if (!trackId.isEmpty() && !user.isEmpty()) {
-            m_trackUsers[trackId].append(user);
-            qDebug() << "User" << user << "added to track" << trackId;
+            if (!m_trackUsers[trackId].contains(user)) {
+                m_trackUsers[trackId].append(user);
+                qDebug() << "User" << user << "added to track" << trackId;
+            }
+            else {
+                qDebug() << "User" << user << "already exists in track" << trackId;
+            }
 
             QJsonObject response;
             response["type"] = "track_users_list";
@@ -212,10 +217,11 @@ void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
             senderSocket->sendTextMessage(QString::fromUtf8(QJsonDocument(response).toJson(QJsonDocument::Compact)));
         }
     }
+
     else if (type == "remove_user") {
         qDebug() << "Received request to remove user";
 
-        QString userId = jsonMessage["user_id"].toString();
+        QString userId = jsonMessage["user"].toString();
 
         if (!userId.isEmpty()) {
             bool userFound = false;
