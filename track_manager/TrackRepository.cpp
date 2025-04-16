@@ -39,14 +39,17 @@ bool TrackRepository::updateComment(int id, const QString& newComment) {
 
 bool TrackRepository::addTrack(const QString& sysname, const QString& comment) 
 {
+    QDateTime currTime = QDateTime::currentDateTime();
+    QString timeStr = currTime.toString("yyyy-mm-dd hh:mm:ss");
+
     QSqlQuery query(m_db);
-    uuidGen(sysname);
+    uuidGen(timeStr);
     query.prepare(
        "INSERT INTO track (ses_id, sysname, commentary, dt, recstate, ses_uid) "
        "VALUES (?, ?, ?, NOW(), 1, ?)" // 1 = ACTIVE, 0 = INACTIVE и т.д
     );
     
-    query.addBindValue(sysname);
+    query.addBindValue(timeStr);
     query.addBindValue(sysname);
     query.addBindValue(comment);
     query.addBindValue(getUuid());
