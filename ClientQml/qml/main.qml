@@ -1,3 +1,4 @@
+// main.qml
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
@@ -122,15 +123,20 @@ ApplicationWindow {
                             id: checkBox
                             anchors.centerIn: parent
                             checked: window.selectedIndex === index
-                            onClicked: {
-                                if (checked) {
+                            onCheckStateChanged: {
+                                if (checkBox.checked) {
                                     window.selectedIndex = index;
-                                } else if (window.selectedIndex === index) {
-                                    window.selectedIndex = -1;
+                                    webSocketClient.addUserToTrack(id, "userName"); // Замените "userName" на имя пользователя
+                                } else {
+                                    if (window.selectedIndex === index) {
+                                        window.selectedIndex = -1;
+                                    }
+                                    webSocketClient.removeUser("userName"); // Замените "userName" на имя пользователя
                                 }
                             }
                         }
                     }
+
                 }
             }
         }

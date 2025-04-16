@@ -14,7 +14,6 @@ QJsonDocument make_json(const QString& type, const QString& key = QString(), con
     return QJsonDocument(json);
 }
 
-
 WebSocketClient::WebSocketClient(QObject* parent) : QObject(parent) {
     qDebug() << "WebSocketClient constructor called";
     connect(&m_webSocket, &QWebSocket::connected, this, &WebSocketClient::onConnected);
@@ -32,6 +31,27 @@ void WebSocketClient::sendJsonMessage(const QString& type, const QString& name) 
     QJsonObject json;
     json["type"] = type;
     json["name"] = name;
+    QJsonDocument doc(json);
+    QString jsonString = doc.toJson(QJsonDocument::Compact);
+    qDebug() << "Sending JSON message:" << jsonString;
+    m_webSocket.sendTextMessage(jsonString);
+}
+
+void WebSocketClient::addUserToTrack(const QString& trackId) {
+    QJsonObject json;
+    json["type"] = "add_user_to_track";
+    json["track_id"] = trackId;
+    json["user"] = name;
+    QJsonDocument doc(json);
+    QString jsonString = doc.toJson(QJsonDocument::Compact);
+    qDebug() << "Sending JSON message:" << jsonString;
+    m_webSocket.sendTextMessage(jsonString);
+}
+
+void WebSocketClient::removeUser() {
+    QJsonObject json;
+    json["type"] = "remove_user";
+    json["user"] = name;
     QJsonDocument doc(json);
     QString jsonString = doc.toJson(QJsonDocument::Compact);
     qDebug() << "Sending JSON message:" << jsonString;
@@ -110,7 +130,8 @@ void WebSocketClient::sendName() {
     if (userName.isEmpty()) {
         userName = qgetenv("USERNAME");
     }
-    qDebug() << "User name:" << userName;
+    name = userName;
+    qDebug() << "User name:" << name;
 
     QJsonDocument jsonDoc = make_json("set_name", "name", userName);
     QString jsonString = jsonDoc.toJson(QJsonDocument::Compact);

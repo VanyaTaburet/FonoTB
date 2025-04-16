@@ -14,7 +14,10 @@ public:
     ~WebSocketClient();
 
     Q_INVOKABLE void connectToServer(const QString& url);
+    Q_INVOKABLE void addUserToTrack(const QString& trackId);
+    Q_INVOKABLE void removeUser();
     void sendJsonMessage(const QString& type, const QString& name);
+    QString name;
 
 signals:
     void connected();
