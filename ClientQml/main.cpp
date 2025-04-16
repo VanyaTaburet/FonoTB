@@ -30,7 +30,6 @@ void loadEnvFile(const QString& filePath) {
     }
 }
 
-
 // Функция для перенаправления сообщений qDebug в файл
 void customMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
     static QFile logFile("application.log");

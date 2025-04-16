@@ -26,13 +26,11 @@ find_package(Qt5 REQUIRED COMPONENTS
 # Добавляем исходные файлы
 set(SOURCES
     main.cpp
-    MainWindow.cpp
     WebSocketClient.cpp
     resources.qrc
 )
 
 set(HEADERS
-    MainWindow.h
     WebSocketClient.h
 )
 

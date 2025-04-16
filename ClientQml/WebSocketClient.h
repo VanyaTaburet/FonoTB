@@ -7,13 +7,16 @@
 class WebSocketClient : public QObject
 {
     Q_OBJECT
+
 public:
     explicit WebSocketClient(QObject* parent = nullptr);
     ~WebSocketClient();
 
-public slots:
-    void connectToServer(const QString& url);
+    //void connectToServer(const QString& url);
+    Q_INVOKABLE void connectToServer(const QString& url);
     void sendJsonMessage(const QString& type, const QString& name);
+    void sendName(); // Объявление новой функции
+    void getTracks();
 
 signals:
     void connected();
@@ -28,6 +31,7 @@ private slots:
 private:
     QWebSocket m_webSocket;
 };
+
 
 #endif // WEBSOCKETCLIENT_H
 
