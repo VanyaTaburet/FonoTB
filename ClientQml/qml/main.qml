@@ -7,7 +7,7 @@ ApplicationWindow {
     visible: true
     width: 800
     height: 600
-    title: qsTr("Монитор задач")
+    title: qsTr("������� �����")
     minimumWidth: 600
     minimumHeight: 400
 
@@ -17,7 +17,6 @@ ApplicationWindow {
         anchors.fill: parent
         spacing: 10
 
-        // Верхняя панель с 4 кнопками (фиксированная высота, не растягивается)
         Row {
             id: buttonRow
             Layout.alignment: Qt.AlignTop
@@ -25,31 +24,15 @@ ApplicationWindow {
             Layout.preferredHeight: 50
 
             Button {
-                text: qsTr("Коннект")
+                text: qsTr("�������")
                 width: 100
                 height: 40
                 onClicked: {
                     webSocketClient.connectToServer(serverUrl)
                 }
             }
-            /*Button {
-                text: qsTr("Кнопка 2")
-                width: 100
-                height: 40
-            }
-            Button {
-                text: qsTr("Кнопка 3")
-                width: 100
-                height: 40
-            }
-            Button {
-                text: qsTr("Кнопка 4")
-                width: 100
-                height: 40
-            }*/
         }
 
-        // Заголовок таблицы (растягивается по ширине)
         Row {
             id: headerRow
             Layout.fillWidth: true
@@ -60,25 +43,21 @@ ApplicationWindow {
                 width: 50
                 height: parent.height
                 color: "#e0e0e0"
-                Text { anchors.centerIn: parent; text: qsTr("№") }
+                Text { anchors.centerIn: parent; text: qsTr("�") }
             }
             Rectangle {
                 width: (parent.width - 102) * 0.3
                 Layout.minimumWidth: 150
                 height: parent.height
                 color: "#e0e0e0"
-                Text { anchors.centerIn: parent; text: qsTr("Пользователь") }
+                Text { anchors.centerIn: parent; text: qsTr("������������") }
             }
-
-            //добавить заголовок плея
-
-
             Rectangle {
                 width: (parent.width - 102) * 0.7
                 Layout.minimumWidth: 300
                 height: parent.height
                 color: "#e0e0e0"
-                Text { anchors.centerIn: parent; text: qsTr("Комментарий") }
+                Text { anchors.centerIn: parent; text: qsTr("�����������") }
             }
             Rectangle {
                 width: 50
@@ -88,7 +67,6 @@ ApplicationWindow {
             }
         }
 
-        // Область для таблицы с прокруткой (растягивается)
         ScrollView {
             id: scrollArea
             Layout.fillWidth: true
@@ -98,7 +76,7 @@ ApplicationWindow {
                 id: listView
                 width: parent.width
                 height: parent.height
-                model: taskModel
+                model: trackModel
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
 
@@ -112,20 +90,15 @@ ApplicationWindow {
                         height: parent.height
                         color: "white"
                         border.color: "gray"
-                        Text { anchors.centerIn: parent; text: taskNumber }
+                        Text { anchors.centerIn: parent; text: id }
                     }
                     Rectangle {
                         width: (parent.width - 102) * 0.3
                         height: parent.height
                         color: "white"
                         border.color: "gray"
-                        Text { anchors.centerIn: parent; text: user }
+                        Text { anchors.centerIn: parent; text: users }
                     }
-
-
-                    //добавить кнопку плей
-
-
                     Rectangle {
                         width: (parent.width - 102) * 0.7
                         height: parent.height
@@ -136,12 +109,7 @@ ApplicationWindow {
                             text: comment
                             font.pixelSize: 16
                             onEditingFinished: {
-
-
-                                //отпавка json
-
-
-                                console.log("Комментарий изменён:", text)
+                                console.log("����������� �������:", comment)
                             }
                         }
                     }
@@ -150,7 +118,6 @@ ApplicationWindow {
                         height: parent.height
                         color: "white"
                         border.color: "gray"
-
                         CheckBox {
                             id: checkBox
                             anchors.centerIn: parent
@@ -161,26 +128,11 @@ ApplicationWindow {
                                 } else if (window.selectedIndex === index) {
                                     window.selectedIndex = -1;
                                 }
-                                //!!
-
-                                //отправка json
-
-                                //!!
                             }
                         }
                     }
                 }
             }
         }
-    }
-
-    // Пример модели данных
-    ListModel {
-        id: taskModel
-        ListElement { taskNumber: "1"; user: "Пользователь 1"; comment: "Выполняется задача"; checked: true }
-        ListElement { taskNumber: "2"; user: "Пользователь 2"; comment: "В работе"; checked: true }
-        ListElement { taskNumber: "3"; user: "Пользователь 3"; comment: "Ожидание"; checked: true }
-        ListElement { taskNumber: "4"; user: "Пользователь 4"; comment: "Тестовая задача"; checked: true }
-        ListElement { taskNumber: "5"; user: "Пользователь 5"; comment: "Еще одна задача"; checked: true }
     }
 }

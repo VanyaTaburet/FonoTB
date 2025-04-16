@@ -27,11 +27,14 @@ find_package(Qt5 REQUIRED COMPONENTS
 set(SOURCES
     main.cpp
     WebSocketClient.cpp
+    TrackModel.cpp
     resources.qrc
 )
 
 set(HEADERS
     WebSocketClient.h
+    TrackModel.h
+    Track.h
 )
 
 # Создаем исполняемый файл

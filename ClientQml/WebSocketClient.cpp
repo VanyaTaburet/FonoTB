@@ -1,40 +1,19 @@
+// WebSocketClient.cpp
 #include "WebSocketClient.h"
-#include <QWebSocket>
-#include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QSysInfo>
-#include <QProcessEnvironment>
 #include <QJsonArray>
+#include <QDebug>
 
-struct Track {
-    QString id;
-    QString name;
-    QString comment;
-    QString date;
-    std::vector<QString> users;
-};
-
-std::vector<Track> tracks;
-
-void addToJson(QJsonObject&) {}
-
-template<typename T, typename... Args>
-void addToJson(QJsonObject& obj, const QString& key, const T& value, const Args&... args) {
-    obj.insert(key, QJsonValue::fromVariant(QVariant::fromValue(value)));
-    addToJson(obj, args...);
+QJsonDocument make_json(const QString& type, const QString& key = QString(), const QString& value = QString()) {
+    QJsonObject json;
+    json["type"] = type;
+    if (!key.isEmpty() && !value.isEmpty()) {
+        json[key] = value;
+    }
+    return QJsonDocument(json);
 }
 
-template<typename... Args>
-QJsonDocument make_json(const QString& typeValue, const Args&... args) {
-    static_assert(sizeof...(args) % 2 == 0, "Arguments must be in key-value pairs");
-
-    QJsonObject obj;
-    obj.insert("type", typeValue);
-    addToJson(obj, args...);
-
-    return QJsonDocument(obj);
-}
 
 WebSocketClient::WebSocketClient(QObject* parent) : QObject(parent) {
     qDebug() << "WebSocketClient constructor called";
@@ -84,6 +63,7 @@ void WebSocketClient::onTextMessageReceived(const QString& message) {
     if (jsonObject["type"] == "tracks_list") {
         QJsonArray jsonTracks = jsonObject["tracks"].toArray();
         tracks.clear();
+        std::vector<Track> newTracks;
 
         for (const QJsonValue& value : jsonTracks) {
             QJsonObject obj = value.toObject();
@@ -92,10 +72,11 @@ void WebSocketClient::onTextMessageReceived(const QString& message) {
             track.name = obj["name"].toString();
             track.comment = obj["comment"].toString();
             track.date = obj["date"].toString();
-            tracks.push_back(track);
+            newTracks.push_back(track);
         }
 
-        qDebug() << "Tracks list updated. Total tracks:" << tracks.size();
+        qDebug() << "Tracks list updated. Total tracks:" << newTracks.size();
+        emit tracksUpdated(newTracks);
     }
     else if (jsonObject["type"] == "track_users_list") {
         QJsonArray jsonTrackUsers = jsonObject["track_users"].toArray();

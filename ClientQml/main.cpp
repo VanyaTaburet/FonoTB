@@ -6,6 +6,7 @@
 #include <QDateTime>
 #include <QProcessEnvironment>
 #include "WebSocketClient.h"
+#include "TrackModel.h"
 
 void loadEnvFile(const QString& filePath) {
     QFile file(filePath);
@@ -66,7 +67,7 @@ int main(int argc, char* argv[]) {
     loadEnvFile(".env");
 
     QQmlApplicationEngine engine;
-
+    TrackModel trackModel;
     WebSocketClient* client = new WebSocketClient();
     engine.rootContext()->setContextProperty("webSocketClient", client);
 
@@ -76,6 +77,13 @@ int main(int argc, char* argv[]) {
         serverUrl = "ws://localhost:1234"; // Значение по умолчанию
     }
     engine.rootContext()->setContextProperty("serverUrl", serverUrl);
+    engine.rootContext()->setContextProperty("trackModel", &trackModel);
+
+    //QObject::connect(client, &WebSocketClient::tracksUpdated, [&trackModel](const std::vector<Track>& tracks) {
+    //    trackModel.setTracks(tracks);
+    //    });
+    QObject::connect(client, &WebSocketClient::tracksUpdated, &trackModel, &TrackModel::setTracks);
+
 
     const QUrl url(QStringLiteral("qrc:/qml/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
