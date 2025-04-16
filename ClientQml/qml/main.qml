@@ -7,7 +7,7 @@ ApplicationWindow {
     visible: true
     width: 800
     height: 600
-    title: qsTr("РњРѕРЅРёС‚РѕСЂ Р·Р°РґР°С‡")
+    title: qsTr("Монитор задач")
     minimumWidth: 600
     minimumHeight: 400
 
@@ -17,7 +17,7 @@ ApplicationWindow {
         anchors.fill: parent
         spacing: 10
 
-        // Р’РµСЂС…РЅСЏСЏ РїР°РЅРµР»СЊ СЃ 4 РєРЅРѕРїРєР°РјРё (С„РёРєСЃРёСЂРѕРІР°РЅРЅР°СЏ РІС‹СЃРѕС‚Р°, РЅРµ СЂР°СЃС‚СЏРіРёРІР°РµС‚СЃСЏ)
+        // Верхняя панель с 4 кнопками (фиксированная высота, не растягивается)
         Row {
             id: buttonRow
             Layout.alignment: Qt.AlignTop
@@ -25,7 +25,7 @@ ApplicationWindow {
             Layout.preferredHeight: 50
 
             Button {
-                text: qsTr("РљРѕРЅРЅРµРєС‚")
+                text: qsTr("Коннект")
                 width: 100
                 height: 40
                 onClicked: {
@@ -33,23 +33,23 @@ ApplicationWindow {
                 }
             }
             /*Button {
-                text: qsTr("РљРЅРѕРїРєР° 2")
+                text: qsTr("Кнопка 2")
                 width: 100
                 height: 40
             }
             Button {
-                text: qsTr("РљРЅРѕРїРєР° 3")
+                text: qsTr("Кнопка 3")
                 width: 100
                 height: 40
             }
             Button {
-                text: qsTr("РљРЅРѕРїРєР° 4")
+                text: qsTr("Кнопка 4")
                 width: 100
                 height: 40
             }*/
         }
 
-        // Р—Р°РіРѕР»РѕРІРѕРє С‚Р°Р±Р»РёС†С‹ (СЂР°СЃС‚СЏРіРёРІР°РµС‚СЃСЏ РїРѕ С€РёСЂРёРЅРµ)
+        // Заголовок таблицы (растягивается по ширине)
         Row {
             id: headerRow
             Layout.fillWidth: true
@@ -60,17 +60,17 @@ ApplicationWindow {
                 width: 50
                 height: parent.height
                 color: "#e0e0e0"
-                Text { anchors.centerIn: parent; text: qsTr("в„–") }
+                Text { anchors.centerIn: parent; text: qsTr("№") }
             }
             Rectangle {
                 width: (parent.width - 102) * 0.3
                 Layout.minimumWidth: 150
                 height: parent.height
                 color: "#e0e0e0"
-                Text { anchors.centerIn: parent; text: qsTr("РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ") }
+                Text { anchors.centerIn: parent; text: qsTr("Пользователь") }
             }
 
-            //РґРѕР±Р°РІРёС‚СЊ Р·Р°РіРѕР»РѕРІРѕРє РїР»РµСЏ
+            //добавить заголовок плея
 
 
             Rectangle {
@@ -78,7 +78,7 @@ ApplicationWindow {
                 Layout.minimumWidth: 300
                 height: parent.height
                 color: "#e0e0e0"
-                Text { anchors.centerIn: parent; text: qsTr("РљРѕРјРјРµРЅС‚Р°СЂРёР№") }
+                Text { anchors.centerIn: parent; text: qsTr("Комментарий") }
             }
             Rectangle {
                 width: 50
@@ -88,7 +88,7 @@ ApplicationWindow {
             }
         }
 
-        // РћР±Р»Р°СЃС‚СЊ РґР»СЏ С‚Р°Р±Р»РёС†С‹ СЃ РїСЂРѕРєСЂСѓС‚РєРѕР№ (СЂР°СЃС‚СЏРіРёРІР°РµС‚СЃСЏ)
+        // Область для таблицы с прокруткой (растягивается)
         ScrollView {
             id: scrollArea
             Layout.fillWidth: true
@@ -123,7 +123,7 @@ ApplicationWindow {
                     }
 
 
-                    //РґРѕР±Р°РІРёС‚СЊ РєРЅРѕРїРєСѓ РїР»РµР№
+                    //добавить кнопку плей
 
 
                     Rectangle {
@@ -138,10 +138,10 @@ ApplicationWindow {
                             onEditingFinished: {
 
 
-                                //РѕС‚РїР°РІРєР° json
+                                //отпавка json
 
 
-                                console.log("РљРѕРјРјРµРЅС‚Р°СЂРёР№ РёР·РјРµРЅС‘РЅ:", text)
+                                console.log("Комментарий изменён:", text)
                             }
                         }
                     }
@@ -163,7 +163,7 @@ ApplicationWindow {
                                 }
                                 //!!
 
-                                //РѕС‚РїСЂР°РІРєР° json
+                                //отправка json
 
                                 //!!
                             }
@@ -174,13 +174,13 @@ ApplicationWindow {
         }
     }
 
-    // РџСЂРёРјРµСЂ РјРѕРґРµР»Рё РґР°РЅРЅС‹С…
+    // Пример модели данных
     ListModel {
         id: taskModel
-        ListElement { taskNumber: "1"; user: "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ 1"; comment: "Р’С‹РїРѕР»РЅСЏРµС‚СЃСЏ Р·Р°РґР°С‡Р°"; checked: true }
-        ListElement { taskNumber: "2"; user: "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ 2"; comment: "Р’ СЂР°Р±РѕС‚Рµ"; checked: true }
-        ListElement { taskNumber: "3"; user: "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ 3"; comment: "РћР¶РёРґР°РЅРёРµ"; checked: true }
-        ListElement { taskNumber: "4"; user: "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ 4"; comment: "РўРµСЃС‚РѕРІР°СЏ Р·Р°РґР°С‡Р°"; checked: true }
-        ListElement { taskNumber: "5"; user: "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ 5"; comment: "Р•С‰Рµ РѕРґРЅР° Р·Р°РґР°С‡Р°"; checked: true }
+        ListElement { taskNumber: "1"; user: "Пользователь 1"; comment: "Выполняется задача"; checked: true }
+        ListElement { taskNumber: "2"; user: "Пользователь 2"; comment: "В работе"; checked: true }
+        ListElement { taskNumber: "3"; user: "Пользователь 3"; comment: "Ожидание"; checked: true }
+        ListElement { taskNumber: "4"; user: "Пользователь 4"; comment: "Тестовая задача"; checked: true }
+        ListElement { taskNumber: "5"; user: "Пользователь 5"; comment: "Еще одна задача"; checked: true }
     }
 }
