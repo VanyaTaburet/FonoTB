@@ -5,6 +5,8 @@
 #include <QJsonArray>
 #include <QDebug>
 #include <QStringList>
+#include <QEventLoop>
+#include <QTimer>
 
 QJsonDocument make_json(const QString& type, const QString& key = QString(), const QString& value = QString()) {
     QJsonObject json;
@@ -20,6 +22,7 @@ WebSocketClient::WebSocketClient(QObject* parent) : QObject(parent) {
     connect(&m_webSocket, &QWebSocket::connected, this, &WebSocketClient::onConnected);
     connect(&m_webSocket, &QWebSocket::disconnected, this, &WebSocketClient::onDisconnected);
     connect(&m_webSocket, &QWebSocket::textMessageReceived, this, &WebSocketClient::onTextMessageReceived);
+    connect(&m_webSocket, &QWebSocket::bytesWritten, this, &WebSocketClient::onBytesWritten);
     qDebug() << "Signals and slots connected in WebSocketClient";
 }
 
@@ -50,17 +53,34 @@ void WebSocketClient::addUserToTrack(const QString& trackId) {
 }
 
 void WebSocketClient::removeUser() {
-    QJsonObject json;
-    json["type"] = "remove_user";
-    json["user"] = name;
-    QJsonDocument doc(json);
-    QString jsonString = doc.toJson(QJsonDocument::Compact);
-    qDebug() << "Sending JSON message:" << jsonString;
-    m_webSocket.sendTextMessage(jsonString);
+    if (m_webSocket.isValid()) {
+        QJsonObject json;
+        json["type"] = "remove_user";
+        json["user"] = name;
+        QJsonDocument doc(json);
+        QString jsonString = doc.toJson(QJsonDocument::Compact);
+        qDebug() << "Sending JSON message to remove user:" << jsonString;
+        m_webSocket.sendTextMessage(jsonString);
+
+        // Ждем подтверждения отправки сообщения
+        QEventLoop loop;
+        connect(this, &WebSocketClient::messageSent, &loop, &QEventLoop::quit);
+        QTimer::singleShot(1000, &loop, &QEventLoop::quit); // Таймаут 1 секунда
+        loop.exec();
+    }
+    else {
+        qDebug() << "WebSocket is not connected. Cannot send message.";
+    }
+}
+
+void WebSocketClient::onBytesWritten(qint64 bytes) {
+    qDebug() << "Bytes written:" << bytes;
+    emit messageSent(); // Испускаем сигнал после записи байтов
 }
 
 WebSocketClient::~WebSocketClient() {
     qDebug() << "WebSocketClient destructor called";
+    removeUser();
 }
 
 void WebSocketClient::onConnected() {
@@ -68,6 +88,7 @@ void WebSocketClient::onConnected() {
     emit connected();
     sendName();
     getTracks();
+    getTrackUsers();
 }
 
 void WebSocketClient::onDisconnected() {
@@ -134,7 +155,6 @@ void WebSocketClient::onTextMessageReceived(const QString& message) {
     emit messageReceived(message);
 }
 
-
 void WebSocketClient::sendName() {
     QString userName = qgetenv("USER");
     if (userName.isEmpty()) {
@@ -155,5 +175,12 @@ void WebSocketClient::getTracks() {
     QString jsonString = jsonDoc.toJson(QJsonDocument::Compact);
     qDebug() << "Sending JSON message:" << jsonString;
 
+    m_webSocket.sendTextMessage(jsonString);
+}
+
+void WebSocketClient::getTrackUsers() {
+    QJsonDocument jsonDoc = make_json("get_track_users");
+    QString jsonString = jsonDoc.toJson(QJsonDocument::Compact);
+    qDebug() << "Sending JSON message:" << jsonString;
     m_webSocket.sendTextMessage(jsonString);
 }

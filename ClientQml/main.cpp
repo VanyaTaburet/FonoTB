@@ -1,3 +1,4 @@
+// main.cpp
 #include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -59,6 +60,11 @@ void customMessageHandler(QtMsgType type, const QMessageLogContext& context, con
     out.flush();
 }
 
+void sendMessageOnExit(WebSocketClient* client) {
+    qDebug() << "Application is closing. Sending message to server.";
+    client->removeUser(); // Отправка сообщения на сервер
+}
+
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
     qInstallMessageHandler(customMessageHandler); // Устанавливаем обработчик сообщений
@@ -96,6 +102,11 @@ int main(int argc, char* argv[]) {
         qDebug() << "Failed to load QML file:" << url;
         return -1;
     }
+
+    // Подключаем сигнал aboutToQuit к слоту sendMessageOnExit
+    QObject::connect(&app, &QCoreApplication::aboutToQuit, [&client]() {
+        sendMessageOnExit(client);
+        });
 
     return app.exec();
 }

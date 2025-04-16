@@ -8,7 +8,7 @@ ApplicationWindow {
     visible: true
     width: 800
     height: 600
-    title: qsTr("РњРѕРЅРёС‚РѕСЂ Р·Р°РґР°С‡")
+    title: qsTr("Монитор задач")
     minimumWidth: 600
     minimumHeight: 400
 
@@ -25,7 +25,7 @@ ApplicationWindow {
             Layout.preferredHeight: 50
 
             Button {
-                text: qsTr("РљРѕРЅРЅРµРєС‚")
+                text: qsTr("Коннект")
                 width: 100
                 height: 40
                 onClicked: {
@@ -44,21 +44,21 @@ ApplicationWindow {
                 width: 50
                 height: parent.height
                 color: "#e0e0e0"
-                Text { anchors.centerIn: parent; text: qsTr("в„–") }
+                Text { anchors.centerIn: parent; text: qsTr("№") }
             }
             Rectangle {
                 width: (parent.width - 102) * 0.3
                 Layout.minimumWidth: 150
                 height: parent.height
                 color: "#e0e0e0"
-                Text { anchors.centerIn: parent; text: qsTr("РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ") }
+                Text { anchors.centerIn: parent; text: qsTr("Пользователь") }
             }
             Rectangle {
                 width: (parent.width - 102) * 0.7
                 Layout.minimumWidth: 300
                 height: parent.height
                 color: "#e0e0e0"
-                Text { anchors.centerIn: parent; text: qsTr("РљРѕРјРјРµРЅС‚Р°СЂРёР№") }
+                Text { anchors.centerIn: parent; text: qsTr("Комментарий") }
             }
             Rectangle {
                 width: 50
@@ -117,7 +117,7 @@ ApplicationWindow {
                             text: model.comment
                             font.pixelSize: 16
                             onEditingFinished: {
-                                console.log("РљРѕРјРјРµРЅС‚Р°СЂРёР№ РёР·РјРµРЅС‘РЅ:", model.comment)
+                                console.log("Комментарий изменён:", model.comment)
                             }
                         }
                     }
