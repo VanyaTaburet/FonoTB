@@ -91,15 +91,22 @@ ApplicationWindow {
                         height: parent.height
                         color: "white"
                         border.color: "gray"
-                        Text { anchors.centerIn: parent; text: id }
+                        Text { anchors.centerIn: parent; text: model.id }
                     }
                     Rectangle {
                         width: (parent.width - 102) * 0.3
                         height: parent.height
                         color: "white"
                         border.color: "gray"
-                        Text { anchors.centerIn: parent; text: users }
+                        Text { 
+                            anchors.centerIn: parent; 
+                            text: model.users ? model.users.join(", ") : "" 
+                        }
+                        Component.onCompleted: {
+                            console.log("Users for track", model.id, ":", model.users ? model.users.join(", ") : "No users");
+                        }
                     }
+
                     Rectangle {
                         width: (parent.width - 102) * 0.7
                         height: parent.height
@@ -107,10 +114,10 @@ ApplicationWindow {
                         border.color: "gray"
                         TextField {
                             anchors.fill: parent
-                            text: comment
+                            text: model.comment
                             font.pixelSize: 16
                             onEditingFinished: {
-                                console.log("Комментарий изменён:", comment)
+                                console.log("Комментарий изменён:", model.comment)
                             }
                         }
                     }
@@ -126,19 +133,20 @@ ApplicationWindow {
                             onCheckStateChanged: {
                                 if (checkBox.checked) {
                                     window.selectedIndex = index;
-                                    webSocketClient.addUserToTrack(id, "userName"); // Замените "userName" на имя пользователя
+                                    webSocketClient.addUserToTrack(model.id, "userName");
                                 } else {
                                     if (window.selectedIndex === index) {
                                         window.selectedIndex = -1;
                                     }
-                                    webSocketClient.removeUser("userName"); // Замените "userName" на имя пользователя
+                                    webSocketClient.removeUser("userName");
                                 }
                             }
                         }
                     }
-
                 }
             }
+
+
         }
     }
 }

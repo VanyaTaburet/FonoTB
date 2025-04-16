@@ -4,6 +4,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QDebug>
+#include <QStringList>
 
 QJsonDocument make_json(const QString& type, const QString& key = QString(), const QString& value = QString()) {
     QJsonObject json;
@@ -96,27 +97,35 @@ void WebSocketClient::onTextMessageReceived(const QString& message) {
         }
 
         qDebug() << "Tracks list updated. Total tracks:" << newTracks.size();
+        tracks = newTracks; // Обновляем список tracks
         emit tracksUpdated(newTracks);
     }
     else if (jsonObject["type"] == "track_users_list") {
         QJsonArray jsonTrackUsers = jsonObject["track_users"].toArray();
-
         for (const QJsonValue& value : jsonTrackUsers) {
             QJsonObject obj = value.toObject();
             QString trackId = obj["track_id"].toString();
+            qDebug() << "TrackId (initial): " << trackId; // Первый вывод TrackId
             QJsonArray jsonUsers = obj["users"].toArray();
-            std::vector<QString> users;
+            QStringList users;
 
             for (const QJsonValue& userValue : jsonUsers) {
-                users.push_back(userValue.toString());
+                qDebug() << "111 str: " << userValue.toString();
+                users.append(userValue.toString());
             }
 
+            qDebug() << "Users list size: " << users.size(); // Добавлено для проверки размера списка
+
             for (Track& track : tracks) {
+                qDebug() << "Checking track with ID: " << track.id;
                 if (track.id == trackId) {
-                    track.users = users;
+                    track.users = users.toVector().toStdVector();
+                    qDebug() << "Updated users for track:" << trackId << "Users:" << users.join(", ");
+                    emit trackUsersUpdated(trackId, users); // Изменено здесь
                     break;
                 }
             }
+
         }
 
         qDebug() << "Track users list updated.";
@@ -124,6 +133,7 @@ void WebSocketClient::onTextMessageReceived(const QString& message) {
 
     emit messageReceived(message);
 }
+
 
 void WebSocketClient::sendName() {
     QString userName = qgetenv("USER");

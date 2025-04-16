@@ -79,11 +79,8 @@ int main(int argc, char* argv[]) {
     engine.rootContext()->setContextProperty("serverUrl", serverUrl);
     engine.rootContext()->setContextProperty("trackModel", &trackModel);
 
-    //QObject::connect(client, &WebSocketClient::tracksUpdated, [&trackModel](const std::vector<Track>& tracks) {
-    //    trackModel.setTracks(tracks);
-    //    });
     QObject::connect(client, &WebSocketClient::tracksUpdated, &trackModel, &TrackModel::setTracks);
-
+    QObject::connect(client, &WebSocketClient::trackUsersUpdated, &trackModel, &TrackModel::updateTrackUsers);
 
     const QUrl url(QStringLiteral("qrc:/qml/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,

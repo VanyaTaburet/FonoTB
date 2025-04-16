@@ -1,4 +1,3 @@
-// TrackModel.h
 #ifndef TRACKMODEL_H
 #define TRACKMODEL_H
 
@@ -25,6 +24,9 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
+
+public slots:
+    void updateTrackUsers(const QString& trackId, const QStringList& users);
 
 private:
     std::vector<Track> tracks;

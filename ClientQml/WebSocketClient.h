@@ -1,4 +1,3 @@
-// WebSocketClient.h
 #ifndef WEBSOCKETCLIENT_H
 #define WEBSOCKETCLIENT_H
 
@@ -24,6 +23,7 @@ signals:
     void disconnected();
     void messageReceived(const QString& message);
     void tracksUpdated(const std::vector<Track>& tracks);
+    void trackUsersUpdated(const QString& trackId, const QStringList& users); // Изменено здесь
 
 private slots:
     void onConnected();

@@ -1,5 +1,5 @@
-// TrackModel.cpp
 #include "TrackModel.h"
+#include <QDebug>
 
 TrackModel::TrackModel(QObject* parent)
     : QAbstractListModel(parent) {
@@ -38,6 +38,7 @@ QVariant TrackModel::data(const QModelIndex& index, int role) const {
     case DateRole:
         return track.date;
     case UsersRole:
+        qDebug() << "trackUsers: " << track.users;
         return QVariant::fromValue(track.users);
     default:
         return QVariant();
@@ -52,4 +53,15 @@ QHash<int, QByteArray> TrackModel::roleNames() const {
     roles[DateRole] = "date";
     roles[UsersRole] = "users";
     return roles;
+}
+
+void TrackModel::updateTrackUsers(const QString& trackId, const QStringList& users) {
+    for (int i = 0; i < tracks.size(); ++i) {
+        if (tracks[i].id == trackId) {
+            tracks[i].users = users.toVector().toStdVector();
+            QModelIndex index = createIndex(i, 0);
+            emit dataChanged(index, index, { UsersRole });
+            break;
+        }
+    }
 }
