@@ -58,7 +58,11 @@ QHash<int, QByteArray> TrackModel::roleNames() const {
 void TrackModel::updateTrackUsers(const QString& trackId, const QStringList& users) {
     for (int i = 0; i < tracks.size(); ++i) {
         if (tracks[i].id == trackId) {
+<<<<<<< HEAD
             tracks[i].users = std::vector<QString>(users.begin(), users.end());
+=======
+            tracks[i].users = users.toVector().toStdVector();
+>>>>>>> ed77ba25d9687baffcebfe9c1339e63e9e3c856a
             QModelIndex index = createIndex(i, 0);
             emit dataChanged(index, index, { UsersRole });
             break;

@@ -1,5 +1,13 @@
+<<<<<<< HEAD
 <RCC>
     <qresource prefix="/">
         <file>qml/main.qml</file>
     </qresource>
 </RCC>
+=======
+<RCC>
+    <qresource prefix="/">
+        <file>qml/main.qml</file>
+    </qresource>
+</RCC>
+>>>>>>> ed77ba25d9687baffcebfe9c1339e63e9e3c856a
