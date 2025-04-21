@@ -17,7 +17,8 @@ jobs:
             build-essential \
             qtbase5-dev \
             qtdeclarative5-dev \
-            qml-module-qtquick2
+            qml-module-qtquick2 \
+            libqt5websockets5-dev
 
       - name: Build Server
         run: |
