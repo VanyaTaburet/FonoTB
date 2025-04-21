@@ -27,7 +27,7 @@ public:
     bool isDatabaseConnected();
 
 protected:
-    QSqlDatabase& m_db;
+    QSqlDatabase m_db;
     QString uuidMy;
 
     void uuidGen(const QString& sysname) {
