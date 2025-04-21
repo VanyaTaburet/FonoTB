@@ -1,4 +1,4 @@
-name: Build Qt/QML with CMake (Astra Linux)
+name: Build Qt/QML with CMake (Ubuntu)
 
 on: [push, pull_request]
 
@@ -9,12 +9,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build in Astra Linux Docker
+      - name: Install Qt and dependencies
         run: |
-          docker run --rm -v "$(pwd):/project" -w /project \
-          astralinux/astra-linux:latest /bin/bash -c "
-          apt-get update -qq && \
-          apt-get install -y --no-install-recommends \
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
             git \
             cmake \
             build-essential \
@@ -22,9 +20,10 @@ jobs:
             qtdeclarative5-dev \
             qtquickcontrols2-5-dev \
             qml-module-qtquick2 \
-            qml-module-qtquick-controls2 && \
-          mkdir -p build && \
-          cd build && \
-          cmake .. -DCMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5 && \
+            qml-module-qtquick-controls2
+
+      - name: Configure and Build
+        run: |
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5
           cmake --build . --parallel $(nproc)
-          "
