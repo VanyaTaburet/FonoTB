@@ -24,6 +24,7 @@ jobs:
 
       - name: Configure and Build
         run: |
+          cd server
           mkdir -p build && cd build
           cmake .. -DCMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5
           cmake --build . --parallel $(nproc)
