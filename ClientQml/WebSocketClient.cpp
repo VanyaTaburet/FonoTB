@@ -62,10 +62,9 @@ void WebSocketClient::removeUser() {
         qDebug() << "Sending JSON message to remove user:" << jsonString;
         m_webSocket.sendTextMessage(jsonString);
 
-        // Ждем подтверждения отправки сообщения
         QEventLoop loop;
         connect(this, &WebSocketClient::messageSent, &loop, &QEventLoop::quit);
-        QTimer::singleShot(1000, &loop, &QEventLoop::quit); // Таймаут 1 секунда
+        QTimer::singleShot(1000, &loop, &QEventLoop::quit);
         loop.exec();
     }
     else {
@@ -75,7 +74,7 @@ void WebSocketClient::removeUser() {
 
 void WebSocketClient::onBytesWritten(qint64 bytes) {
     qDebug() << "Bytes written:" << bytes;
-    emit messageSent(); // Испускаем сигнал после записи байтов
+    emit messageSent();
 }
 
 WebSocketClient::~WebSocketClient() {
@@ -118,7 +117,7 @@ void WebSocketClient::onTextMessageReceived(const QString& message) {
         }
 
         qDebug() << "Tracks list updated. Total tracks:" << newTracks.size();
-        tracks = newTracks; // Обновляем список tracks
+        tracks = newTracks;
         emit tracksUpdated(newTracks);
     }
     else if (jsonObject["type"] == "track_users_list") {
@@ -126,7 +125,7 @@ void WebSocketClient::onTextMessageReceived(const QString& message) {
         for (const QJsonValue& value : jsonTrackUsers) {
             QJsonObject obj = value.toObject();
             QString trackId = obj["track_id"].toString();
-            qDebug() << "TrackId (initial): " << trackId; // Первый вывод TrackId
+            qDebug() << "TrackId (initial): " << trackId; 
             QJsonArray jsonUsers = obj["users"].toArray();
             QStringList users;
 
@@ -135,14 +134,14 @@ void WebSocketClient::onTextMessageReceived(const QString& message) {
                 users.append(userValue.toString());
             }
 
-            qDebug() << "Users list size: " << users.size(); // Добавлено для проверки размера списка
+            qDebug() << "Users list size: " << users.size(); 
 
             for (Track& track : tracks) {
                 qDebug() << "Checking track with ID: " << track.id;
                 if (track.id == trackId) {
-                    track.users = users.toVector().toStdVector();
+                    track.users = std::vector<QString>(users.begin(), users.end());
                     qDebug() << "Updated users for track:" << trackId << "Users:" << users.join(", ");
-                    emit trackUsersUpdated(trackId, users); // Изменено здесь
+                    emit trackUsersUpdated(trackId, users); 
                     break;
                 }
             }
