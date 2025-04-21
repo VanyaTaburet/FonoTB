@@ -1,0 +1,4 @@
+/home/anton/FonoTB-saveliy/ClientQml/build/CMakeFiles/rebuild_cache.dir
+/home/anton/FonoTB-saveliy/ClientQml/build/CMakeFiles/WssQmlClient.dir
+/home/anton/FonoTB-saveliy/ClientQml/build/CMakeFiles/edit_cache.dir
+/home/anton/FonoTB-saveliy/ClientQml/build/CMakeFiles/WssQmlClient_autogen.dir
