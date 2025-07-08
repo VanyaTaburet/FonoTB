@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dark Dashboard</title>
+  <title>Fonogram Dashboard</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -17,7 +17,7 @@
       <nav class="menu-center">
         <a href="#" class="menu-link active" data-target="Home">📊 Home</a>
         <a href="#" class="menu-link" data-target="PlayList">📦 PlayList</a>
-        <a href="#" class="menu-link" data-target="Your comments">✉️ Your comments</a>
+        <a href="#" class="menu-link" data-target="YourComments">✉️ Your comments</a>
         <a href="#" class="menu-link" data-target="Messages">👥 Messages</a>
       </nav>
 
@@ -33,7 +33,8 @@
         <div class="header-search">
           <input type="text" class="search-input" placeholder="Поиск...">
           <h1 id="page-title">Home</h1>
-        </div>       
+          <button id="header-back-button" class="hidden">← Назад к списку</button>
+        </div>
         <div class="profile">
           <span class="name">Violet Kaminska</span>
           <img src="https://i.pravatar.cc/40" alt="User Avatar" class="avatar" />
@@ -41,10 +42,65 @@
       </header>
 
       <!-- Pages -->
-      <section id="Home" class="page active-page"><p>Home side.</p></section>
+      <section id="Home" class="page active-page">
+        <div class="record-list">
+          <h2 class="record-title">Tracks</h2>
+          <ul class="record-items" id="record-items">
+            <!-- динамические записи -->
+          </ul>
+        </div>
+      </section>
+
       <section id="PlayList" class="page"><p>PlayList management here.</p></section>
-      <section id="Your comments" class="page"><p>Comments section here.</p></section>
+      <section id="YourComments" class="page"><p>Comments section here.</p></section>
       <section id="Messages" class="page"><p>Messages section here.</p></section>
+
+      <!-- Track Detail Page -->
+      <section id="TrackDetail" class="page">
+        <div class="track-detail-container">
+          <div class="track-main">
+            <div class="record-list">
+              <h2 class="record-title" id="track-title"></h2>
+              <p id="track-info"></p>
+
+              <!-- Audio Player -->
+              <audio id="audio-player" controls style="width: 100%; margin-top: 20px;">
+                <source src="" type="audio/mpeg">
+                Your browser does not support the audio element.
+              </audio>
+
+              <!-- Comments -->
+              <div class="comments-box">
+                <h3>Комментарии</h3>
+                <div class="comments-scroll">
+                  <p>Отличный трек!</p>
+                  <p>Очень атмосферно 🔥</p>
+                  <p>Когда выйдет следующий?</p>
+                  <p>Любимый момент на 1:12</p>
+                  <p>Слушаю каждый день!</p>
+                  <p>🔥🔥🔥</p>
+                  <p>Где найти текст?</p>
+                  <p>💙💙💙</p>
+                  <p>Шедевр</p>
+                  <p>Спасибо!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Listeners -->
+          <div class="listeners-box">
+            <h3>Слушают сейчас</h3>
+            <ul>
+              <li>🟢 Алексей</li>
+              <li>🟢 Мария</li>
+              <li>🟢 Даниил</li>
+              <li>🟢 София</li>
+              <li>🟢 Илья</li>
+            </ul>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -52,6 +108,58 @@
     const menuLinks = document.querySelectorAll(".menu-link[data-target]");
     const pages = document.querySelectorAll(".page");
     const title = document.getElementById("page-title");
+    const headerBackButton = document.getElementById("header-back-button");
+    const recordList = document.getElementById("record-items");
+
+    const tracksData = [
+      { id: 1, title: "Track One", info: "Информация о треке 1", src: "track1.mp3" },
+      { id: 2, title: "Track Two", info: "Информация о треке 2", src: "track2.mp3" },
+      { id: 3, title: "Track Three", info: "Информация о треке 3", src: "track3.mp3" }
+    ];
+
+    function fetchTracks() {
+      recordList.innerHTML = "";
+      tracksData.forEach(track => {
+        const li = document.createElement("li");
+        li.textContent = `🎵 ${track.title}`;
+        li.style.cursor = "pointer";
+        li.addEventListener("click", () => openTrackDetail(track.id));
+        recordList.appendChild(li);
+      });
+    }
+
+    function openTrackDetail(trackId) {
+      const track = tracksData.find(t => t.id === trackId);
+      if (!track) return;
+
+      pages.forEach(p => p.classList.remove("active-page"));
+      document.getElementById("TrackDetail").classList.add("active-page");
+
+      menuLinks.forEach(l => l.classList.remove("active"));
+
+      headerBackButton.classList.remove("hidden");
+      title.style.display = "none";
+
+      document.getElementById("track-title").textContent = track.title;
+      document.getElementById("track-info").textContent = track.info;
+
+      const audio = document.getElementById("audio-player");
+      audio.querySelector("source").src = track.src;
+      audio.load();
+    }
+
+    headerBackButton.addEventListener("click", () => {
+      pages.forEach(p => p.classList.remove("active-page"));
+      document.getElementById("Home").classList.add("active-page");
+
+      menuLinks.forEach(l => {
+        l.classList.toggle("active", l.dataset.target === "Home");
+      });
+
+      headerBackButton.classList.add("hidden");
+      title.style.display = "";
+      title.textContent = "Home";
+    });
 
     menuLinks.forEach(link => {
       link.addEventListener("click", (e) => {
@@ -64,9 +172,16 @@
 
         link.classList.add("active");
         document.getElementById(target).classList.add("active-page");
-        title.textContent = link.textContent.replace(/^[^a-zA-Z]+/, '');
+        title.textContent = link.textContent.replace(/^[^a-zA-Zа-яА-Я]+/, '');
+
+        headerBackButton.classList.add("hidden");
+        title.style.display = "";
+
+        if (target === "Home") fetchTracks();
       });
     });
+
+    window.addEventListener("DOMContentLoaded", fetchTracks);
   </script>
 </body>
 </html>
