@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dark Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="top">
+        <div class="logo">🔷 Fonogram</div>
+      </div>
+
+      <nav class="menu-center">
+        <a href="#" class="menu-link active" data-target="Home">📊 Home</a>
+        <a href="#" class="menu-link" data-target="PlayList">📦 PlayList</a>
+        <a href="#" class="menu-link" data-target="Your comments">✉️ Your comments</a>
+        <a href="#" class="menu-link" data-target="Messages">👥 Messages</a>
+      </nav>
+
+      <div class="bottom">
+        <a href="#" class="menu-link">⚙️ Settings</a>
+        <a href="#" class="menu-link logout">🚪 Sign Out</a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      <header class="header">
+        <div class="header-search">
+          <input type="text" class="search-input" placeholder="Поиск...">
+          <h1 id="page-title">Home</h1>
+        </div>       
+        <div class="profile">
+          <span class="name">Violet Kaminska</span>
+          <img src="https://i.pravatar.cc/40" alt="User Avatar" class="avatar" />
+        </div>
+      </header>
+
+      <!-- Pages -->
+      <section id="Home" class="page active-page"><p>Home side.</p></section>
+      <section id="PlayList" class="page"><p>PlayList management here.</p></section>
+      <section id="Your comments" class="page"><p>Comments section here.</p></section>
+      <section id="Messages" class="page"><p>Messages section here.</p></section>
+    </main>
+  </div>
+
+  <script>
+    const menuLinks = document.querySelectorAll(".menu-link[data-target]");
+    const pages = document.querySelectorAll(".page");
+    const title = document.getElementById("page-title");
+
+    menuLinks.forEach(link => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        const target = link.dataset.target;
+        if (!target) return;
+
+        menuLinks.forEach(l => l.classList.remove("active"));
+        pages.forEach(p => p.classList.remove("active-page"));
+
+        link.classList.add("active");
+        document.getElementById(target).classList.add("active-page");
+        title.textContent = link.textContent.replace(/^[^a-zA-Z]+/, '');
+      });
+    });
+  </script>
+</body>
+</html>
