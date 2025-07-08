@@ -6,7 +6,7 @@
 
 body {
   font-family: sans-serif;
-  background: #121212;
+  background: #12121E;
   color: white;
 }
 
@@ -18,7 +18,7 @@ body {
 .sidebar {
   width: 240px;
   height: 100vh;
-  background-color: #1e1e2f;
+  background-color: #1D1D29;
   color: white;
   display: flex;
   flex-direction: column;
@@ -67,11 +67,11 @@ body {
 
 .menu-link:hover,
 .logout:hover {
-  background-color: #2d2d44;
+  background-color: #1D1D29;
 }
 
 .menu-link.active {
-  background-color: #3b3b5c;
+  background-color: #282838;
 }
 
 /* Main */
@@ -120,7 +120,7 @@ body {
   font-size: 14px;
   border: none;
   border-radius: 6px;
-  background-color: #2a2a40;
+  background-color: #1D1D29;
   color: white;
   width: 240px;
   outline: none;
@@ -132,5 +132,5 @@ body {
 }
 
 .search-input:focus {
-  background-color: #3b3b5c;
+  background-color: #282838;
 }
