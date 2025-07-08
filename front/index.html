@@ -45,14 +45,27 @@
       <section id="Home" class="page active-page">
         <div class="record-list">
           <h2 class="record-title">Tracks</h2>
-          <ul class="record-items" id="record-items">
-            <!-- динамические записи -->
-          </ul>
+          <div class="comments-scroll">
+            <ul class="record-items" id="record-items">
+              <!-- динамические записи -->
+            </ul>
+          </div>
         </div>
       </section>
 
       <section id="PlayList" class="page"><p>PlayList management here.</p></section>
-      <section id="YourComments" class="page"><p>Comments section here.</p></section>
+
+      <section id="YourComments" class="page">
+        <div class="record-list">
+          <h2 class="record-title">Comments</h2>
+          <div class="comments-scroll">
+            <ul class="record-items" id="user-comments-list">
+              <!-- комментарии отобразятся динамически -->
+            </ul>
+          </div>
+        </div>
+      </section>
+      
       <section id="Messages" class="page"><p>Messages section here.</p></section>
 
       <!-- Track Detail Page -->
@@ -91,13 +104,26 @@
           <!-- Listeners -->
           <div class="listeners-box">
             <h3>Слушают сейчас</h3>
-            <ul>
-              <li>🟢 Алексей</li>
-              <li>🟢 Мария</li>
-              <li>🟢 Даниил</li>
-              <li>🟢 София</li>
-              <li>🟢 Илья</li>
-            </ul>
+            <div class="comments-scroll">
+              <ul>
+                <li>🟢 Алексей</li>
+                <li>🟢 Мария</li>
+                <li>🟢 Даниил</li>
+                <li>🟢 София</li>
+                <li>🟢 Илья</li>
+                <li>🟢 Алексей</li>
+                <li>🟢 Мария</li>
+                <li>🟢 Даниил</li>
+                <li>🟢 София</li>
+                <li>🟢 Илья</li>
+                <li>🟢 Алексей</li>
+                <li>🟢 Мария</li>
+                <li>🟢 Даниил</li>
+                <li>🟢 София</li>
+                <li>🟢 Илья</li>
+              </ul>
+            </div>
+            
           </div>
         </div>
       </section>
@@ -114,7 +140,26 @@
     const tracksData = [
       { id: 1, title: "Track One", info: "Информация о треке 1", src: "track1.mp3" },
       { id: 2, title: "Track Two", info: "Информация о треке 2", src: "track2.mp3" },
-      { id: 3, title: "Track Three", info: "Информация о треке 3", src: "track3.mp3" }
+      { id: 3, title: "Track Three", info: "Информация о треке 3", src: "track3.mp3" },
+      { id: 4, title: "Track One", info: "Информация о треке 1", src: "track1.mp3" },
+      { id: 5, title: "Track Two", info: "Информация о треке 2", src: "track2.mp3" },
+      { id: 6, title: "Track Three", info: "Информация о треке 3", src: "track3.mp3" },
+      { id: 7, title: "Track One", info: "Информация о треке 1", src: "track1.mp3" },
+      { id: 8, title: "Track Two", info: "Информация о треке 2", src: "track2.mp3" },
+      { id: 9, title: "Track Three", info: "Информация о треке 3", src: "track3.mp3" }
+    ];
+
+    const commentsData = [
+      { id: 1, text: "Отличный трек!" },
+      { id: 2, text: "Очень атмосферно 🔥" },
+      { id: 3, text: "Когда выйдет следующий?" },
+      { id: 4, text: "Любимый момент на 1:12" },
+      { id: 5, text: "Слушаю каждый день!" },
+      { id: 6, text: "🔥🔥🔥" },
+      { id: 7, text: "Где найти текст?" },
+      { id: 8, text: "💙💙💙" },
+      { id: 9, text: "Шедевр" },
+      { id: 10, text: "Спасибо!" }
     ];
 
     function fetchTracks() {
@@ -125,6 +170,17 @@
         li.style.cursor = "pointer";
         li.addEventListener("click", () => openTrackDetail(track.id));
         recordList.appendChild(li);
+      });
+    }
+
+    function fetchUserComments() {
+      const list = document.getElementById("user-comments-list");
+      list.innerHTML = "";
+
+      commentsData.forEach(comment => {
+        const li = document.createElement("li");
+        li.textContent = `💬 ${comment.text}`;
+        list.appendChild(li);
       });
     }
 
@@ -177,7 +233,11 @@
         headerBackButton.classList.add("hidden");
         title.style.display = "";
 
-        if (target === "Home") fetchTracks();
+        if (target === "Home") {
+          fetchTracks();
+        } else if (target === "YourComments") {
+          fetchUserComments();
+        }
       });
     });
 
@@ -185,3 +245,33 @@
   </script>
 </body>
 </html>
+
+<!-- Для БД
+async function fetchTracks() {
+  recordList.innerHTML = "";
+
+  try {
+    const response = await fetch("/api/tracks");
+    if (!response.ok) throw new Error("Ошибка загрузки треков");
+    const tracks = await response.json();
+
+    renderTracks(tracks);
+  } catch (e) {
+    console.warn("Сервер недоступен, показываю тестовые треки");
+    renderTracks(tracksData);
+  }
+
+  function renderTracks(tracks) {
+    tracks.forEach(track => {
+      const li = document.createElement("li");
+      li.textContent = `🎵 ${track.title}`;
+      li.style.cursor = "pointer";
+      li.addEventListener("click", () => openTrackDetail(track.id));
+      recordList.appendChild(li);
+    });
+  }
+}
+-->
+<!--
+
+-->

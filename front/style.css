@@ -84,7 +84,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 32px;
+  margin-bottom: 20px;
 }
 
 .header-search {
@@ -130,8 +130,9 @@ body {
   background-color: #2A2A40;
   color: white;
   border: none;
-  padding: 8px 16px;
+  padding: 16px 32px;
   border-radius: 6px;
+  font-size: 14px;
   cursor: pointer;
   margin-right: 16px;
   height: fit-content;
@@ -194,6 +195,7 @@ body {
   flex: 1;
   background-color: #1D1D29;
   border-radius: 12px;
+  height: 330px;
   padding: 16px;
   height: fit-content;
   align-self: flex-start;
@@ -231,7 +233,7 @@ body {
 
 .comments-scroll {
   overflow-y: auto;
-  max-height: 150px;
+  max-height: 330px;
   padding-right: 8px;
   display: flex;
   flex-direction: column;
@@ -245,3 +247,5 @@ body {
   background-color: #555;
   border-radius: 4px;
 }
+
+
