@@ -16,7 +16,7 @@ body {
 
 /* Sidebar */
 .sidebar {
-  width: 240px;
+  width: 245px;
   height: 100vh;
   background-color: #1D1D29;
   display: flex;
@@ -34,7 +34,7 @@ body {
 }
 
 .logo {
-  font-size: 24px;
+  font-size: 28px;
 }
 
 .menu-center {
@@ -56,7 +56,7 @@ body {
 .logout {
   color: white;
   text-decoration: none;
-  font-size: 16px;
+  font-size: 20px;
   padding: 8px 16px;
   border-radius: 8px;
   transition: background 0.3s;
@@ -75,7 +75,7 @@ body {
 
 /* Main */
 .main {
-  margin-left: 240px;
+  margin-left: 250px;
   padding: 20px;
   flex: 1;
 }
@@ -84,20 +84,20 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .header-search {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 20px;
 }
 
 .search-input {
-  padding: 8px 12px;
-  font-size: 14px;
+  padding: 14px 18px;
+  font-size: 20px;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   background-color: #1D1D29;
   color: white;
   width: 240px;
@@ -121,8 +121,8 @@ body {
 
 .avatar {
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 60px;
+  height: 60px;
 }
 
 /* Back Button */
@@ -130,9 +130,9 @@ body {
   background-color: #2A2A40;
   color: white;
   border: none;
-  padding: 16px 32px;
-  border-radius: 6px;
-  font-size: 14px;
+  padding: 16px 22px;
+  border-radius: 10px;
+  font-size: 20px;
   cursor: pointer;
   margin-right: 16px;
   height: fit-content;
@@ -160,7 +160,7 @@ body {
 }
 
 .record-title {
-  font-size: 20px;
+  font-size: 24px;
   margin-bottom: 16px;
 }
 
@@ -174,8 +174,8 @@ body {
 .record-items li {
   padding: 10px 16px;
   background-color: #1D1D29;
-  border-radius: 6px;
-  font-size: 16px;
+  border-radius: 10px;
+  font-size: 20px;
 }
 
 /* Track Detail Layout */
@@ -195,14 +195,14 @@ body {
   flex: 1;
   background-color: #1D1D29;
   border-radius: 12px;
-  height: 330px;
-  padding: 16px;
+  height: 300px;
+  padding: 20px;
   height: fit-content;
   align-self: flex-start;
 }
 
 .listeners-box h3 {
-  font-size: 16px;
+  font-size: 20px;
   margin-bottom: 12px;
 }
 
@@ -220,7 +220,7 @@ body {
   border-radius: 12px;
   margin-top: 24px;
   padding: 16px;
-  max-height: 200px;
+  max-height: 300px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -233,11 +233,12 @@ body {
 
 .comments-scroll {
   overflow-y: auto;
-  max-height: 330px;
+  max-height: 450px;
   padding-right: 8px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  font-size: 20px;
 }
 
 .comments-scroll::-webkit-scrollbar {
@@ -248,4 +249,6 @@ body {
   border-radius: 4px;
 }
 
-
+.name{
+  font-size: 20px;
+}
