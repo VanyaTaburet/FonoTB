@@ -18,7 +18,8 @@ jobs:
             qtbase5-dev \
             qtdeclarative5-dev \
             qml-module-qtquick2 \
-            libqt5websockets5-dev
+            libqt5websockets5-dev \
+            qtwebengine5-dev
 
       - name: Build Server
         run: |
@@ -30,6 +31,13 @@ jobs:
       - name: Build Client
         run: |
           cd ClientQml
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5
+          cmake --build . --parallel $(nproc)
+
+      - name: Build Front-interface
+        run: |
+          cd front
           mkdir -p build && cd build
           cmake .. -DCMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5
           cmake --build . --parallel $(nproc)
