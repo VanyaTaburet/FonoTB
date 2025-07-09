@@ -16,13 +16,4 @@ MainWindow::MainWindow(QWidget *parent)
     resize(1280, 720);  // начальный размер 16:9
 }
 
-void MainWindow::resizeEvent(QResizeEvent *event) {
-    QMainWindow::resizeEvent(event);
-    qreal scaleFactor = width() / 1280.0;
-    
-    QFont font = this->font();
-    font.setPointSizeF(12 * scaleFactor);
-    this->setFont(font);
-}
-
 
