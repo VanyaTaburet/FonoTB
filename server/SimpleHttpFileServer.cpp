@@ -26,7 +26,7 @@ void SimpleHttpFileServer::onReadyRead()
     QByteArray requestData = socket->readAll();
     QString request(requestData);
 
-    // Простейший парсер первой строки HTTP GET запроса
+    // ГЏГ°Г®Г±ГІГҐГ©ГёГЁГ© ГЇГ Г°Г±ГҐГ° ГЇГҐГ°ГўГ®Г© Г±ГІГ°Г®ГЄГЁ HTTP GET Г§Г ГЇГ°Г®Г±Г 
     QStringList lines = request.split("\r\n");
     if (lines.isEmpty())
         return;
@@ -45,18 +45,18 @@ void SimpleHttpFileServer::onReadyRead()
 
 void SimpleHttpFileServer::handleRequest(QTcpSocket* socket, const QString& path)
 {
-    // Пример: /track_001.wav
+    // ГЏГ°ГЁГ¬ГҐГ°: /track_001.wav
     QString fileName = path;
     if (fileName.startsWith('/'))
         fileName = fileName.mid(1);
 
-    // Безопасность: не даём выходить в родительские директории
+    // ГЃГҐГ§Г®ГЇГ Г±Г­Г®Г±ГІГј: Г­ГҐ Г¤Г ВёГ¬ ГўГ»ГµГ®Г¤ГЁГІГј Гў Г°Г®Г¤ГЁГІГҐГ«ГјГ±ГЄГЁГҐ Г¤ГЁГ°ГҐГЄГІГ®Г°ГЁГЁ
     if (fileName.contains("..")) {
         sendNotFound(socket);
         return;
     }
 
-    // Пусть музыка лежит в ./tracks/
+    // ГЏГіГ±ГІГј Г¬ГіГ§Г»ГЄГ  Г«ГҐГ¦ГЁГІ Гў ./tracks/
     QString filePath = QDir("tracks").filePath(fileName);
     sendFile(socket, filePath);
 }
@@ -72,7 +72,7 @@ void SimpleHttpFileServer::sendFile(QTcpSocket* socket, const QString& filePath)
     QByteArray data = file.readAll();
     file.close();
 
-    // Определяем Content-Type (только для .wav, можно расширить)
+    // ГЋГЇГ°ГҐГ¤ГҐГ«ГїГҐГ¬ Content-Type (ГІГ®Г«ГјГЄГ® Г¤Г«Гї .wav, Г¬Г®Г¦Г­Г® Г°Г Г±ГёГЁГ°ГЁГІГј)
     QString contentType = "audio/wav";
     if (filePath.endsWith(".mp3", Qt::CaseInsensitive))
         contentType = "audio/mpeg";

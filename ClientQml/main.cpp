@@ -20,10 +20,10 @@ void loadEnvFile(const QString& filePath) {
     while (!in.atEnd()) {
         QString line = in.readLine().trimmed();
         if (line.isEmpty() || line.startsWith('#')) {
-            continue; // Пропускаем пустые строки и комментарии
+            continue; // ГЏГ°Г®ГЇГіГ±ГЄГ ГҐГ¬ ГЇГіГ±ГІГ»ГҐ Г±ГІГ°Г®ГЄГЁ ГЁ ГЄГ®Г¬Г¬ГҐГ­ГІГ Г°ГЁГЁ
         }
 
-        QStringList parts = line.split('=', QString::SkipEmptyParts);
+        QStringList parts = line.split('=', Qt::SkipEmptyParts);
         if (parts.size() == 2) {
             QString key = parts[0].trimmed();
             QString value = parts[1].trimmed();
@@ -32,7 +32,7 @@ void loadEnvFile(const QString& filePath) {
     }
 }
 
-// Функция для перенаправления сообщений qDebug в файл
+// Г”ГіГ­ГЄГ¶ГЁГї Г¤Г«Гї ГЇГҐГ°ГҐГ­Г ГЇГ°Г ГўГ«ГҐГ­ГЁГї Г±Г®Г®ГЎГ№ГҐГ­ГЁГ© qDebug Гў ГґГ Г©Г«
 void customMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
     static QFile logFile("application.log");
     if (!logFile.isOpen()) {
@@ -62,14 +62,14 @@ void customMessageHandler(QtMsgType type, const QMessageLogContext& context, con
 
 void sendMessageOnExit(WebSocketClient* client) {
     qDebug() << "Application is closing. Sending message to server.";
-    client->removeUser(); // Отправка сообщения на сервер
+    client->removeUser(); // ГЋГІГЇГ°Г ГўГЄГ  Г±Г®Г®ГЎГ№ГҐГ­ГЁГї Г­Г  Г±ГҐГ°ГўГҐГ°
 }
 
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
-    qInstallMessageHandler(customMessageHandler); // Устанавливаем обработчик сообщений
+    qInstallMessageHandler(customMessageHandler); // Г“Г±ГІГ Г­Г ГўГ«ГЁГўГ ГҐГ¬ Г®ГЎГ°Г ГЎГ®ГІГ·ГЁГЄ Г±Г®Г®ГЎГ№ГҐГ­ГЁГ©
 
-    // Загрузка переменных из .env файла
+    // Г‡Г ГЈГ°ГіГ§ГЄГ  ГЇГҐГ°ГҐГ¬ГҐГ­Г­Г»Гµ ГЁГ§ .env ГґГ Г©Г«Г 
     loadEnvFile(".env");
 
     QQmlApplicationEngine engine;
@@ -77,10 +77,10 @@ int main(int argc, char* argv[]) {
     WebSocketClient* client = new WebSocketClient();
     engine.rootContext()->setContextProperty("webSocketClient", client);
 
-    // Чтение переменной окружения
+    // Г—ГІГҐГ­ГЁГҐ ГЇГҐГ°ГҐГ¬ГҐГ­Г­Г®Г© Г®ГЄГ°ГіГ¦ГҐГ­ГЁГї
     QString serverUrl = qgetenv("WEBSOCKET_SERVER_URL");
     if (serverUrl.isEmpty()) {
-        serverUrl = "ws://localhost:1234"; // Значение по умолчанию
+        serverUrl = "ws://localhost:1234"; // Г‡Г­Г Г·ГҐГ­ГЁГҐ ГЇГ® ГіГ¬Г®Г«Г·Г Г­ГЁГѕ
     }
     engine.rootContext()->setContextProperty("serverUrl", serverUrl);
     engine.rootContext()->setContextProperty("trackModel", &trackModel);
@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    // Подключаем сигнал aboutToQuit к слоту sendMessageOnExit
+    // ГЏГ®Г¤ГЄГ«ГѕГ·Г ГҐГ¬ Г±ГЁГЈГ­Г Г« aboutToQuit ГЄ Г±Г«Г®ГІГі sendMessageOnExit
     QObject::connect(&app, &QCoreApplication::aboutToQuit, [&client]() {
         sendMessageOnExit(client);
         });
