@@ -25,6 +25,7 @@ public:
 
     // Новая функция для проверки подключения к базе данных
     bool isDatabaseConnected();
+    //bool updateComment(int trackId, const QString& newComment);
 
 protected:
     QSqlDatabase m_db;

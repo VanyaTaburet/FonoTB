@@ -6,18 +6,15 @@
 #include <QJsonArray>
 #include <QSettings>
 #include <QFile>
-
 #include "TrackRepository.h"
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QDateTime>
-#include <QUuid>
 
-
-SimpleWebSocketServer::SimpleWebSocketServer(QObject *parent)
+SimpleWebSocketServer::SimpleWebSocketServer(QObject* parent)
     : QObject(parent),
-      m_server(new QWebSocketServer(QStringLiteral("Simple WebSocket Server"),
-                                    QWebSocketServer::NonSecureMode, this))
+    m_server(new QWebSocketServer(QStringLiteral("Simple WebSocket Server"),
+        QWebSocketServer::NonSecureMode, this))
 {
 }
 
@@ -27,15 +24,11 @@ SimpleWebSocketServer::~SimpleWebSocketServer()
     qDeleteAll(m_clients.keys());
 }
 
-
 void SimpleWebSocketServer::startServer()
 {
-	
     if (!connectToDatabase()) {
-        return ; // Выход из приложения, если подключение не удалось
+        return;
     }
-
-    //connectToDatabase(); // Добавлено
 
     QString ipAddress = "192.168.3.8";
     quint16 port = 1234;
@@ -44,41 +37,37 @@ void SimpleWebSocketServer::startServer()
     if (envFile.exists()) {
         QSettings settings(".env", QSettings::IniFormat);
         settings.setIniCodec("UTF-8");
-
         ipAddress = settings.value("IP", ipAddress).toString();
-        port = settings.value("HOST", port).toUInt();
-
+        port = settings.value("HOST_WSS", port).toUInt();
         qDebug() << "Loaded from .env: IP =" << ipAddress << ", Port =" << port;
-    } else {
+    }
+    else {
         qDebug() << "No .env file found. Using default settings: IP =" << ipAddress << ", Port =" << port;
     }
 
     if (m_server->listen(QHostAddress(ipAddress), port)) {
         qDebug() << "Server started at" << ipAddress << ":" << port;
         connect(m_server, &QWebSocketServer::newConnection, this, &SimpleWebSocketServer::onNewConnection);
-    } else {
+    }
+    else {
         qDebug() << "Failed to start server!";
     }
 }
 
 void SimpleWebSocketServer::onNewConnection()
 {
-    QWebSocket *socket = m_server->nextPendingConnection();
-
+    QWebSocket* socket = m_server->nextPendingConnection();
     connect(socket, &QWebSocket::textMessageReceived, this, &SimpleWebSocketServer::onTextMessageReceived);
     connect(socket, &QWebSocket::disconnected, this, &SimpleWebSocketServer::onDisconnected);
 
     m_clients[socket] = QString("Unknown");
-
     qDebug() << "New connection from" << m_clients[socket];
 
     broadcastMessage(QString("%1 has joined the server").arg(m_clients[socket]));
-
     sendUserListToAll();
 }
 
-// Функция для парсинга JSON
-QJsonObject SimpleWebSocketServer::parseJson(const QString &message)
+QJsonObject SimpleWebSocketServer::parseJson(const QString& message)
 {
     QJsonDocument jsonDoc = QJsonDocument::fromJson(message.toUtf8());
     if (!jsonDoc.isObject()) {
@@ -88,7 +77,8 @@ QJsonObject SimpleWebSocketServer::parseJson(const QString &message)
     return jsonDoc.object();
 }
 
-void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
+void SimpleWebSocketServer::onTextMessageReceived(const QString& message)
+{
     QWebSocket* senderSocket = qobject_cast<QWebSocket*>(sender());
     if (!senderSocket) {
         qWarning() << "Received message from an unknown sender.";
@@ -96,7 +86,6 @@ void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
     }
 
     qDebug() << "Message received from client:" << message;
-
     QJsonObject jsonMessage = parseJson(message);
     if (jsonMessage.isEmpty()) {
         qWarning() << "Failed to parse message. Invalid JSON format.";
@@ -123,14 +112,56 @@ void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
         qDebug() << "Received message from" << m_clients[senderSocket] << ": " << userMessage;
         broadcastMessage(QString("%1: %2").arg(m_clients[senderSocket]).arg(userMessage));
     }
+    else if (type == "new_comment") {
+        QString trackIdStr = jsonMessage["track_id"].toString();
+        QString user = jsonMessage["user"].toString();
+        QString text = jsonMessage["text"].toString();
+
+        bool ok = false;
+        int trackId = trackIdStr.toInt(&ok);
+        if (!ok || text.isEmpty()) {
+            qWarning() << "Invalid new_comment payload:" << jsonMessage;
+            QJsonObject response;
+            response["type"] = "new_comment_response";
+            response["status"] = "failure";
+            response["error"] = "Некорректные данные";
+            senderSocket->sendTextMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
+            return;
+        }
+
+        QString commentText = user.isEmpty() ? text : user + ": " + text;
+        TrackRepository repo(m_database);
+        if (repo.updateComment(trackId, commentText)) {
+            // Уведомление всем клиентам, что обновился комментарий (broadcast)
+            QJsonObject notify;
+            notify["type"] = "comment_updated";
+            notify["track_id"] = QString::number(trackId);
+            notify["comment"] = commentText;
+            notify["user"] = user;
+            QString notifyStr = QString::fromUtf8(QJsonDocument(notify).toJson(QJsonDocument::Compact));
+            broadcastMessage(notifyStr);
+
+            // Ответ только инициатору
+            QJsonObject response;
+            response["type"] = "new_comment_response";
+            response["status"] = "success";
+            senderSocket->sendTextMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
+        }
+        else {
+            QJsonObject response;
+            response["type"] = "new_comment_response";
+            response["status"] = "failure";
+            response["error"] = "Ошибка записи в базу";
+            senderSocket->sendTextMessage(QJsonDocument(response).toJson(QJsonDocument::Compact));
+        }
+    }
     else if (type == "get_tracks") {
         qDebug() << "Received request for all tracks from" << m_clients[senderSocket];
 
         QJsonArray tracksArray;
-        TrackRepository repo(m_database); // Передаем объект базы данных в репозиторий
+        TrackRepository repo(m_database);
         qDebug() << "send Database query";
         auto tracks = repo.getAllTracks();
-
         qDebug() << "Fetched" << tracks.size() << "tracks from repository.";
 
         for (const auto& track : tracks) {
@@ -138,14 +169,12 @@ void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
                 qWarning() << "Invalid track data format:" << track;
                 continue;
             }
-
             QJsonObject trackObject;
             trackObject["id"] = track[0];
             trackObject["name"] = track[1];
             trackObject["date"] = track[2];
             trackObject["comment"] = track[3];
             tracksArray.append(trackObject);
-
             qDebug() << "Processed track:" << trackObject;
         }
 
@@ -155,15 +184,12 @@ void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
 
         QString responseStr = QString::fromUtf8(QJsonDocument(response).toJson(QJsonDocument::Compact));
         qDebug() << "Sending tracks list response to client:" << responseStr;
-
         senderSocket->sendTextMessage(responseStr);
     }
     else if (type == "debug_create_track") {
         qDebug() << "Received request to create a new track";
-
         QString sysname = jsonMessage["sysname"].toString();
         QString comment = jsonMessage["comment"].toString();
-
         TrackRepository repo(m_database);
         if (repo.addTrack(sysname, comment)) {
             qDebug() << "Track successfully created";
@@ -182,10 +208,8 @@ void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
     }
     else if (type == "add_user_to_track") {
         qDebug() << "Received request to add user to track";
-
         QString trackId = jsonMessage["track_id"].toString();
         QString user = jsonMessage["user"].toString();
-
         if (!trackId.isEmpty() && !user.isEmpty()) {
             if (!m_trackUsers[trackId].contains(user)) {
                 m_trackUsers[trackId].append(user);
@@ -194,7 +218,6 @@ void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
             else {
                 qDebug() << "User" << user << "already exists in track" << trackId;
             }
-
             QJsonObject response;
             response["type"] = "track_users_list";
             QJsonArray trackUsersArray;
@@ -205,7 +228,6 @@ void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
                 trackUsersArray.append(trackUsers);
             }
             response["track_users"] = trackUsersArray;
-
             QString responseStr = QString::fromUtf8(QJsonDocument(response).toJson(QJsonDocument::Compact));
             broadcastMessage(responseStr);
         }
@@ -217,12 +239,9 @@ void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
             senderSocket->sendTextMessage(QString::fromUtf8(QJsonDocument(response).toJson(QJsonDocument::Compact)));
         }
     }
-
     else if (type == "remove_user") {
         qDebug() << "Received request to remove user";
-
         QString userId = jsonMessage["user"].toString();
-
         if (!userId.isEmpty()) {
             bool userFound = false;
             for (auto it = m_trackUsers.begin(); it != m_trackUsers.end(); ++it) {
@@ -231,7 +250,6 @@ void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
                     qDebug() << "User" << userId << "removed from track" << it.key();
                 }
             }
-
             QJsonObject response;
             response["type"] = "track_users_list";
             QJsonArray trackUsersArray;
@@ -242,7 +260,6 @@ void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
                 trackUsersArray.append(trackUsers);
             }
             response["track_users"] = trackUsersArray;
-
             QString responseStr = QString::fromUtf8(QJsonDocument(response).toJson(QJsonDocument::Compact));
             broadcastMessage(responseStr);
         }
@@ -256,7 +273,6 @@ void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
     }
     else if (type == "get_track_users") {
         qDebug() << "Received request for track users";
-
         QJsonArray trackUsersArray;
         for (auto it = m_trackUsers.begin(); it != m_trackUsers.end(); ++it) {
             QJsonObject trackObject;
@@ -264,14 +280,11 @@ void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
             trackObject["users"] = QJsonArray::fromStringList(it.value());
             trackUsersArray.append(trackObject);
         }
-
         QJsonObject response;
         response["type"] = "track_users_list";
         response["track_users"] = trackUsersArray;
-
         QString responseStr = QString::fromUtf8(QJsonDocument(response).toJson(QJsonDocument::Compact));
         qDebug() << "Sending track users list response to client:" << responseStr;
-
         senderSocket->sendTextMessage(responseStr);
     }
     else {
@@ -279,22 +292,14 @@ void SimpleWebSocketServer::onTextMessageReceived(const QString& message) {
     }
 }
 
-
-
-
-
-
 void SimpleWebSocketServer::onDisconnected()
 {
-    QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
+    QWebSocket* socket = qobject_cast<QWebSocket*>(sender());
     if (socket) {
         QString userName = m_clients.take(socket);
         qDebug() << userName << "disconnected";
-
         broadcastMessage(QString("%1 has left the server").arg(userName));
-
         sendUserListToAll();
-
         socket->deleteLater();
     }
 }
@@ -306,25 +311,21 @@ void SimpleWebSocketServer::broadcastMessage(const QString& message)
     }
 }
 
-
 void SimpleWebSocketServer::sendUserListToAll()
 {
     QJsonObject jsonMessage;
     QJsonArray userArray;
-
-    for (const auto &name : m_clients.values()) {
+    for (const auto& name : m_clients.values()) {
         userArray.append(name);
     }
-
     jsonMessage["type"] = "user_list";
     jsonMessage["users"] = userArray;
-
     QString userListMessage = QString::fromUtf8(QJsonDocument(jsonMessage).toJson(QJsonDocument::Compact));
-
     broadcastMessage(userListMessage);
 }
 
-bool SimpleWebSocketServer::connectToDatabase() {
+bool SimpleWebSocketServer::connectToDatabase()
+{
     QFile envFile(".env");
     if (!envFile.exists()) {
         qCritical() << "No .env file found. Cannot load database settings.";
@@ -333,7 +334,6 @@ bool SimpleWebSocketServer::connectToDatabase() {
 
     QSettings settings(".env", QSettings::IniFormat);
     settings.setIniCodec("UTF-8");
-
     QString host = settings.value("DB_HOST", "localhost").toString();
     int port = settings.value("DB_PORT", 5432).toInt();
     QString dbName = settings.value("DB_NAME", "").toString();
@@ -369,23 +369,22 @@ bool SimpleWebSocketServer::connectToDatabase() {
     }
 
     qDebug() << "Database connection successful. Ready to work.";
-    m_database = m_db; // Сохраняем объект базы данных в члене класса
+    m_database = m_db;
     return true;
 }
 
 void SimpleWebSocketServer::showAllRecords(TrackRepository& repo)
 {
-    auto tracks = repo.getAllTracks(); // Получаем все треки из базы данных
+    auto tracks = repo.getAllTracks();
     if (tracks.isEmpty()) {
         qDebug() << "There are no records in the database.";
         return;
     }
-
     qDebug() << "\nList of all entries:";
     qDebug() << "ID\tTitle\tDate\tСomment";
     qDebug() << "----------------------------------------";
     for (const auto& track : tracks) {
         qDebug() << track[0] << "\t" << track[1].left(10) << "\t"
-                 << track[2] << "\t" << track[3];
+            << track[2] << "\t" << track[3];
     }
 }
