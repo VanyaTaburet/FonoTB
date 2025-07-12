@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Track WebSocket Client</title>
+  <style>
+    body { font-family: sans-serif; margin: 40px; background: #f8f8f8; }
+    h1 { color: #333; }
+    .log { background: #222; color: #fff; padding: 10px; height: 180px; overflow-y: auto; font-size: 13px; margin-bottom: 20px; }
+    .tracks { background: #fff; border-radius: 8px; box-shadow: 0 0 5px #ccc; padding: 15px; margin-bottom: 20px; }
+    .tracks ul { list-style: none; padding: 0; }
+    .tracks li { margin-bottom: 30px; padding-bottom: 12px; border-bottom: 1px solid #eee;}
+    label { display: block; margin: 10px 0 3px 0; }
+    input, button, textarea, select { padding: 5px; }
+    .connected { color: green; }
+    .disconnected { color: red; }
+    .audio-controls { margin: 20px 0; }
+    canvas { display: block; margin-top: 10px; background: #eee; border-radius: 5px; }
+    .track-users { margin: 6px 0 6px 0; font-size: 0.97em; color: #444; }
+    .track-comments-list { list-style: none; padding: 0; margin: 8px 0 4px 0; max-height: 80px; overflow-y: auto; font-size: 0.97em;}
+    .track-comments-list li { border-bottom: 1px solid #eee; margin-bottom: 3px; padding-bottom: 2px; }
+    .comment-form textarea { width: 94%; }
+    .comment-form button { margin-top: 2px; }
+    .addme-btn { margin-right: 8px; }
+    .disabled-btn { opacity: 0.55; pointer-events: none; }
+    .user-controls { margin-bottom: 20px; }
+    .user-controls label { display: inline; margin-right: 7px; }
+    .user-controls input { margin-right: 8px; }
+    .user-controls button { margin-right: 8px; }
+    .user-controls select { margin-right: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Track WebSocket Client</h1>
+
+  <div class="user-controls">
+    <button id="removeUserBtn" style="background: #e55; color: white;">Remove Me (Logout)</button>
+    <label for="userNameInput">Имя:</label>
+    <input type="text" id="userNameInput" value="" size="10">
+    <button id="setNameBtn">Log in</button>
+  </div>
+
+  <div>
+    <label>WebSocket Server URL:</label>
+    <input type="text" id="wsUrl" value="ws://192.168.1.10:1234" size="40">
+    <button id="connectBtn">Connect</button>
+    <span id="status" class="disconnected">Disconnected</span>
+  </div>
+
+  <div class="log" id="log"></div>
+
+  <div class="tracks">
+    <h2>Tracks</h2>
+    <ul id="tracksList"></ul>
+    <div class="audio-controls">
+      <audio id="audioPlayer" controls style="width: 100%;" preload="auto"></audio>
+      <canvas id="waveformCanvas" width="600" height="80"></canvas>
+    </div>
+  </div>
+
+  <script>
+    let userName = localStorage.getItem('trackUserName') || "";
+    let userNameInput = document.getElementById("userNameInput");
+    userNameInput.value = userName;
+    let ws = null;
+    let connected = false;
+    let tracks = [];
+    let trackUsers = {}; // {track_id: [users]}
+    let comments = {};   // {track_id: [ {user, text, time} ]}
+    let myTrack = null; // id трека, на котором я (или null)
+
+    function setUserName(newName) {
+      userName = newName.trim() || "";
+      userNameInput.value = userName;
+      localStorage.setItem("trackUserName", userName);
+      log("Имя пользователя установлено: " + userName);
+    }
+
+    function log(msg) {
+      const logEl = document.getElementById('log');
+      logEl.textContent += `[${(new Date()).toLocaleTimeString()}] ${msg}\n`;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function setStatus(isConnected) {
+      const st = document.getElementById('status');
+      st.textContent = isConnected ? 'Connected' : 'Disconnected';
+      st.className = isConnected ? 'connected' : 'disconnected';
+    }
+
+    function connect() {
+      if (!userName) {
+        alert("Пожалуйста, введите имя перед подключением!");
+        return;
+      }
+      if (ws) ws.close();
+      const url = document.getElementById('wsUrl').value.trim();
+      ws = new WebSocket(url);
+      log("Connecting to " + url + " ...");
+      setStatus(false);
+
+      ws.onopen = () => {
+        connected = true;
+        setStatus(true);
+        log("WebSocket connected");
+        sendName();
+        getTracks();
+        getTrackUsers();
+      };
+      ws.onclose = () => {
+        connected = false;
+        setStatus(false);
+        log("WebSocket disconnected");
+      };
+      ws.onerror = (e) => {
+        log("WebSocket error");
+      };
+      ws.onmessage = (event) => {
+        log("Received: " + event.data);
+        handleMessage(event.data);
+      };
+    }
+
+    function sendName() {
+      sendJson({ type: "set_name", name: userName });
+    }
+    function getTracks() {
+      sendJson({ type: "get_tracks" });
+    }
+    function getTrackUsers() {
+      sendJson({ type: "get_track_users" });
+    }
+
+    function doAddUserToTrack(trackId) {
+      if (!userName) {
+        alert("Сначала войдите под своим именем!");
+        return;
+      }
+      if(myTrack && myTrack !== trackId) {
+        alert("Вы уже назначены на другой трек! Сначала снимите себя с текущего трека.");
+        return;
+      }
+      sendJson({ type: "add_user_to_track", track_id: trackId, user: userName });
+    }
+    function removeUser() {
+      if (!userName) return;
+      sendJson({ type: "remove_user", user: userName });
+      myTrack = null;
+    }
+
+    function sendComment(trackId, text) {
+      sendJson({ type: "new_comment", track_id: trackId, user: userName, text: text });
+      if (!comments[trackId]) comments[trackId] = [];
+      comments[trackId].push({user: userName, text, time: new Date().toISOString()});
+      updateTracksList();
+    }
+    function sendJson(obj) {
+      if (ws && connected) {
+        ws.send(JSON.stringify(obj));
+        log("Sent: " + JSON.stringify(obj));
+      } else {
+        log("Not connected!");
+      }
+    }
+
+    function handleMessage(msg) {
+      let data = {};
+      try { data = JSON.parse(msg); } catch { }
+      if (typeof msg === "string") {
+        if (msg.includes('has joined the server')) {
+          log(msg);
+        }
+      }
+      if (!data || typeof data !== 'object') return;
+
+      // tracks_list: comment — это описание/последний коммент, не история!
+      if (data.type === "tracks_list" && Array.isArray(data.tracks)) {
+        tracks = data.tracks;
+        updateTracksList();
+      }
+
+      if (data.type === "track_users_list" && Array.isArray(data.track_users)) {
+        trackUsers = {};
+        myTrack = null;
+        data.track_users.forEach(tu => {
+          trackUsers[tu.track_id] = tu.users || [];
+          if (tu.users && tu.users.includes(userName)) {
+            myTrack = tu.track_id;
+          }
+        });
+        updateTracksList();
+      }
+
+      // новая строка комментария в историю
+      if (data.type === "new_comment") {
+        if (!comments[data.track_id]) comments[data.track_id] = [];
+        comments[data.track_id].push({
+          user: data.user,
+          text: data.text,
+          time: data.time || new Date().toISOString()
+        });
+        updateTracksList();
+      }
+
+      // изменение поля comment (последний комментарий/описание) у нужного трека
+      if (data.type === "comment_updated") {
+        // Найти трек и обновить comment
+        let tr = tracks.find(t => t.id === data.track_id);
+        if (tr) {
+          tr.comment = data.comment;
+        }
+        updateTracksList();
+      }
+    }
+
+    function getServerIpFromWsUrl() {
+      const wsUrl = document.getElementById('wsUrl').value.trim();
+      try {
+        const url = new URL(wsUrl.replace(/^ws/, 'http'));
+        return url.hostname;
+      } catch {
+        return location.hostname;
+      }
+    }
+
+    function updateTracksList() {
+      const ul = document.getElementById('tracksList');
+      ul.innerHTML = '';
+      tracks.forEach(track => {
+        const usersList = trackUsers[track.id] || [];
+        const amOnTrack = myTrack === track.id;
+        const trackComments = (comments[track.id] || []).slice(-10);
+
+        let html = '';
+        html += `<b>${track.name}</b> (ID: ${track.id})<br>`;
+        // Описание трека из поля comment
+        if (track.comment && typeof track.comment === "string" && track.comment.trim() !== "") {
+          html += `<small>${track.comment} [${track.date}]</small><br>`;
+        } else {
+          html += `<small>[${track.date}]</small><br>`;
+        }
+        html += `<div class="track-users"><b>Сейчас заняты:</b> ${usersList.length ? usersList.map(u => u === userName ? `<b>${u}</b>` : u).join(', ') : '<i>никто</i>'}</div>`;
+
+        if (amOnTrack) {
+          html += `<span style="color:green;font-weight:bold;">Вы уже назначены на этот трек</span>`;
+        } else if (myTrack && !amOnTrack) {
+          html += `<button class="addme-btn disabled-btn" disabled>Занят другим треком</button>`;
+        } else {
+          html += `<button class="addme-btn" onclick="window.addUserToTrack('${track.id}')">Add Me</button>`;
+        }
+        html += `<button onclick="window.playTrackByName('${track.name}.wav')">Play</button>`;
+
+        // Комментарии для трека (только из событий new_comment)
+        html += `<div class="track-comments">`;
+        html += `<ul class="track-comments-list">`;
+        trackComments.forEach(c =>
+          html += `<li><b>${c.user}</b>: ${c.text} <small style="color:#888">[${(new Date(c.time)).toLocaleTimeString()}]</small></li>`
+        );
+        html += `</ul>`;
+        if (amOnTrack) {
+          html += `<form class="comment-form" onsubmit="return window.sendCommentForm('${track.id}', this);">
+              <textarea rows="2" placeholder="Комментарий..."></textarea>
+              <br>
+              <button type="submit">Отправить</button>
+            </form>`;
+        } else {
+          html += `<div style="color:#aaa;font-size:0.95em;">Войдите в трек, чтобы комментировать</div>`;
+        }
+        html += `</div>`;
+
+        const li = document.createElement('li');
+        li.innerHTML = html;
+        ul.appendChild(li);
+      });
+    }
+
+    // --- Глобальные функции для кнопок/форм (window.*) ---
+    window.playTrackByName = function(filename) {
+      playTrack(filename);
+    };
+    window.addUserToTrack = function(trackId) {
+      doAddUserToTrack(trackId);
+    };
+    window.sendCommentForm = function(trackId, form) {
+      const textarea = form.querySelector('textarea');
+      const text = textarea.value.trim();
+      if (!text) return false;
+      sendComment(trackId, text);
+      textarea.value = "";
+      return false;
+    };
+
+    // --- Проигрывание и Waveform ---
+    async function playTrack(filename) {
+      if (!filename) {
+        log("Не задано имя файла трека.");
+        return;
+      }
+      const ip = getServerIpFromWsUrl();
+      const url = `http://${ip}:8080/${filename}`;
+      log("Загружаем аудио: " + url);
+
+      const audioElem = document.getElementById('audioPlayer');
+      audioElem.src = url;
+      audioElem.load();
+      audioElem.play().catch(e => {
+        log("Ошибка воспроизведения: " + e);
+      });
+
+      drawWaveform(url);
+    }
+
+    async function drawWaveform(url) {
+      const canvas = document.getElementById('waveformCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('HTTP error ' + response.status);
+        const arrayBuffer = await response.arrayBuffer();
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+        const rawData = audioBuffer.getChannelData(0);
+        const samples = canvas.width;
+        const blockSize = Math.floor(rawData.length / samples);
+        const filteredData = [];
+        for (let i = 0; i < samples; i++) {
+          let sum = 0;
+          for (let j = 0; j < blockSize; j++) {
+            sum += Math.abs(rawData[(i * blockSize) + j]);
+          }
+          filteredData.push(sum / blockSize);
+        }
+
+        ctx.beginPath();
+        ctx.strokeStyle = "#1e90ff";
+        for (let i = 0; i < samples; i++) {
+          const x = i;
+          const y = canvas.height - filteredData[i] * canvas.height;
+          ctx.moveTo(x, canvas.height);
+          ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      } catch (e) {
+        log("Ошибка загрузки или декодирования аудио для waveform: " + e);
+      }
+    }
+
+    // --- UI handlers ---
+    document.getElementById('connectBtn').onclick = connect;
+
+    document.getElementById('removeUserBtn').onclick = () => {
+      removeUser();
+      log("Пользователь удалён (remove_user отправлено)");
+    };
+
+    document.getElementById('setNameBtn').onclick = () => {
+      setUserName(userNameInput.value);
+    };
+
+    userNameInput.addEventListener('keydown', function(e) {
+      if (e.key === "Enter") {
+        setUserName(userNameInput.value);
+      }
+    });
+
+    window.addEventListener('beforeunload', () => {
+      removeUser();
+    });
+
+  </script>
+</body>
+</html>
