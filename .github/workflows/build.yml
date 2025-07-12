@@ -37,7 +37,7 @@ jobs:
 
       - name: Build Front-interface
         run: |
-          cd front
+          cd html\ client
           mkdir -p build && cd build
           cmake .. -DCMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5
           cmake --build . --parallel $(nproc)
