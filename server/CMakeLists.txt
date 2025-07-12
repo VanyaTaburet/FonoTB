@@ -18,15 +18,17 @@ set(SOURCES
     main.cpp
     SimpleWebSocketServer.cpp
     TrackRepository.cpp
+    SimpleHttpFileServer.cpp   # <--- добавлено!
 )
 
 # Все заголовочные файлы, включая те, что требуют MOC
 set(HEADERS
     SimpleWebSocketServer.h
     TrackRepository.h
+    SimpleHttpFileServer.h     # <--- добавлено!
 )
 
-# Генерация MOC файлов
+# Генерация MOC файлов (если нужны только для классов с Q_OBJECT)
 qt5_wrap_cpp(MOC_SOURCES ${HEADERS})
 
 # Создание исполняемого файла

@@ -25,9 +25,10 @@ public:
 
     // Новая функция для проверки подключения к базе данных
     bool isDatabaseConnected();
+    //bool updateComment(int trackId, const QString& newComment);
 
 protected:
-    QSqlDatabase m_db;
+    QSqlDatabase& m_db;
     QString uuidMy;
 
     void uuidGen(const QString& sysname) {
