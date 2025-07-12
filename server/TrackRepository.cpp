@@ -27,6 +27,20 @@ TrackRepository::TrackRepository(QSqlDatabase& db, QObject* parent)
     // return result;
 // }
 
+//bool TrackRepository::updateComment(int trackId, const QString& newComment)
+//{
+//    QSqlQuery query(m_db);
+//    query.prepare("UPDATE track SET commentary = ? WHERE sys_id = ?");
+//    query.addBindValue(newComment);
+//    query.addBindValue(trackId);
+//
+//    if (!query.exec()) {
+//        qDebug() << "Error updating a comment:" << query.lastError().text();
+//        return false;
+//    }
+//    return true;
+//}
+
 QList<QStringList> TrackRepository::getAllTracks() {
     QList<QStringList> result;
 	qDebug() << "Database connection name:" << m_db.connectionName();
