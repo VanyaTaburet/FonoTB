@@ -59,7 +59,6 @@
   </div>
 
   <script>
-    // --- Имя пользователя ---
     let userName = localStorage.getItem('trackUserName') || "";
     let userNameInput = document.getElementById("userNameInput");
     userNameInput.value = userName;
@@ -174,11 +173,9 @@
       }
       if (!data || typeof data !== 'object') return;
 
-      // --- обработка списка треков: comment это описание, не история! ---
+      // tracks_list: comment — это описание/последний коммент, не история!
       if (data.type === "tracks_list" && Array.isArray(data.tracks)) {
         tracks = data.tracks;
-        // comment — просто описание, не история!
-        // при получении нового списка треков, не трогать comments[track_id]
         updateTracksList();
       }
 
@@ -193,6 +190,8 @@
         });
         updateTracksList();
       }
+
+      // новая строка комментария в историю
       if (data.type === "new_comment") {
         if (!comments[data.track_id]) comments[data.track_id] = [];
         comments[data.track_id].push({
@@ -200,6 +199,16 @@
           text: data.text,
           time: data.time || new Date().toISOString()
         });
+        updateTracksList();
+      }
+
+      // изменение поля comment (последний комментарий/описание) у нужного трека
+      if (data.type === "comment_updated") {
+        // Найти трек и обновить comment
+        let tr = tracks.find(t => t.id === data.track_id);
+        if (tr) {
+          tr.comment = data.comment;
+        }
         updateTracksList();
       }
     }
